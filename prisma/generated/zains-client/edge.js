@@ -178,6 +178,10 @@ const config = {
         "fromEnvVar": null,
         "value": "darwin",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "rhel-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
@@ -195,6 +199,7 @@ const config = {
     "zains"
   ],
   "activeProvider": "mysql",
+  "postinstall": false,
   "inlineDatasources": {
     "zains": {
       "url": {
@@ -203,8 +208,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator zainsClient {\n  provider = \"prisma-client-js\"\n  output   = \"./generated/zains-client\"\n}\n\ndatasource zains {\n  provider = \"mysql\"\n  url      = env(\"ZAINSDATABASE_URL\")\n}\n\nmodel AdminUsers {\n  idUser             Int       @id @default(autoincrement()) @map(\"id_user\")\n  userName           String    @map(\"user_name\")\n  password           String    @map(\"password\")\n  fullName           String    @map(\"full_name\")\n  idEmployee         String    @map(\"id_employee\")\n  idPosition         String    @map(\"id_position\")\n  position           String?   @map(\"position\")\n  address            String?   @map(\"address\")\n  telpon             String?   @map(\"telpon\")\n  whatsapp           String    @map(\"whatsapp\")\n  whatsappNotif      YesNo     @default(n) @map(\"whatsapp_notif\")\n  apps               String    @map(\"apps\")\n  idAppsGroupDefault String    @map(\"id_apps_group_default\")\n  idOffice           Int       @map(\"id_office\")\n  email              String?   @map(\"email\")\n  admin              YesNo     @default(n) @map(\"admin\")\n  active             YesNo     @default(y) @map(\"active\")\n  created            DateTime? @map(\"created\")\n  updated            DateTime? @default(now()) @map(\"updated\")\n  expired            DateTime  @map(\"expired\")\n  lastLogin          DateTime? @map(\"last_login\")\n  idEntitas          String    @map(\"id_entitas\")\n  style              String    @default(\"default\") @map(\"style\")\n  foto               String    @map(\"foto\")\n  session            String    @map(\"session\")\n\n  @@map(\"admin_users\")\n}\n\nenum YesNo {\n  y\n  n\n}\n",
-  "inlineSchemaHash": "776522f2ef9e12b55986d950bccabe43c0db233bef6632d796553a816046796f",
+  "inlineSchema": "generator zainsClient {\n  provider      = \"prisma-client-js\"\n  output        = \"./generated/zains-client\"\n  binaryTargets = [\"native\", \"rhel-openssl-3.0.x\"]\n}\n\ndatasource zains {\n  provider = \"mysql\"\n  url      = env(\"ZAINSDATABASE_URL\")\n}\n\nmodel AdminUsers {\n  idUser             Int       @id @default(autoincrement()) @map(\"id_user\")\n  userName           String    @map(\"user_name\")\n  password           String    @map(\"password\")\n  fullName           String    @map(\"full_name\")\n  idEmployee         String    @map(\"id_employee\")\n  idPosition         String    @map(\"id_position\")\n  position           String?   @map(\"position\")\n  address            String?   @map(\"address\")\n  telpon             String?   @map(\"telpon\")\n  whatsapp           String    @map(\"whatsapp\")\n  whatsappNotif      YesNo     @default(n) @map(\"whatsapp_notif\")\n  apps               String    @map(\"apps\")\n  idAppsGroupDefault String    @map(\"id_apps_group_default\")\n  idOffice           Int       @map(\"id_office\")\n  email              String?   @map(\"email\")\n  admin              YesNo     @default(n) @map(\"admin\")\n  active             YesNo     @default(y) @map(\"active\")\n  created            DateTime? @map(\"created\")\n  updated            DateTime? @default(now()) @map(\"updated\")\n  expired            DateTime  @map(\"expired\")\n  lastLogin          DateTime? @map(\"last_login\")\n  idEntitas          String    @map(\"id_entitas\")\n  style              String    @default(\"default\") @map(\"style\")\n  foto               String    @map(\"foto\")\n  session            String    @map(\"session\")\n\n  @@map(\"admin_users\")\n}\n\nenum YesNo {\n  y\n  n\n}\n",
+  "inlineSchemaHash": "895476fdf2fac747a6fa59a3c75a789fa130c42e43fa8982ac8eebe4a40ea635",
   "copyEngine": true
 }
 config.dirname = '/'
