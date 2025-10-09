@@ -26,7 +26,11 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api/).*)'],
+  // Protect all pages except API routes and the ones we explicitly allow in PUBLIC_PATHS
+  matcher: [
+    '/((?!api/).*)',
+    '/api/auth/(.*)',
+  ],
 }
 
 
