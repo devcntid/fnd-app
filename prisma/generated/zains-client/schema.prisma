@@ -1,0 +1,44 @@
+generator zainsClient {
+  provider = "prisma-client-js"
+  output   = "./generated/zains-client"
+}
+
+datasource zains {
+  provider = "mysql"
+  url      = env("ZAINSDATABASE_URL")
+}
+
+model AdminUsers {
+  idUser             Int       @id @default(autoincrement()) @map("id_user")
+  userName           String    @map("user_name")
+  password           String    @map("password")
+  fullName           String    @map("full_name")
+  idEmployee         String    @map("id_employee")
+  idPosition         String    @map("id_position")
+  position           String?   @map("position")
+  address            String?   @map("address")
+  telpon             String?   @map("telpon")
+  whatsapp           String    @map("whatsapp")
+  whatsappNotif      YesNo     @default(n) @map("whatsapp_notif")
+  apps               String    @map("apps")
+  idAppsGroupDefault String    @map("id_apps_group_default")
+  idOffice           Int       @map("id_office")
+  email              String?   @map("email")
+  admin              YesNo     @default(n) @map("admin")
+  active             YesNo     @default(y) @map("active")
+  created            DateTime? @map("created")
+  updated            DateTime? @default(now()) @map("updated")
+  expired            DateTime  @map("expired")
+  lastLogin          DateTime? @map("last_login")
+  idEntitas          String    @map("id_entitas")
+  style              String    @default("default") @map("style")
+  foto               String    @map("foto")
+  session            String    @map("session")
+
+  @@map("admin_users")
+}
+
+enum YesNo {
+  y
+  n
+}

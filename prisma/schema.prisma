@@ -1,0 +1,460 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================
+// CORE TABLES - Donatur & Transaksi
+// =============================================
+
+model CorezDonatur {
+  idDonatur           String  @id @map("id_donatur") @db.VarChar(20)
+  donatur             String  @map("donatur") @db.VarChar(60)
+  panggilan           String  @map("panggilan") @db.VarChar(50)
+  tglLahir            DateTime? @map("tgl_lahir") @db.Date
+  tempatLahir         String  @map("tempat_lahir") @db.VarChar(20)
+  alamat              String  @map("alamat") @db.Text
+  des                 String  @map("des") @db.Text
+  idDonaturParent     String  @map("id_donatur_parent") @db.VarChar(15)
+  nikah               String  @map("nikah") @db.VarChar(10)
+  komitment           Float   @map("komitment") @db.Double
+  idJenis             Int     @map("id_jenis")
+  status              Status  @map("status")
+  tglReg              DateTime? @map("tgl_reg") @db.Date
+  telpon              String  @map("telpon") @db.VarChar(30)
+  hp                  String? @map("hp") @db.VarChar(30)
+  email               String? @map("email") @db.VarChar(100)
+  jk                  JenisKelamin @map("jk")
+  ll                  String  @map("ll") @db.VarChar(100)
+  idPekerjaan         Int     @map("id_pekerjaan")
+  agama               Agama   @map("agama")
+  idCaraBayar         Int     @map("id_cara_bayar")
+  idRutinitasTransaksi Int    @map("id_rutinitas_transaksi")
+  tglTransaksi        Int     @map("tgl_transaksi")
+  idPenghasilan       Int     @map("id_penghasilan")
+  idPendidikan        Int     @map("id_pendidikan")
+  sumber              String  @map("sumber") @db.VarChar(50)
+  idSumberDonatur     String  @map("id_sumber_donatur") @db.VarChar(60)
+  lain                String  @map("lain") @db.Text
+  idKantor            Int     @map("id_kantor")
+  idCrm               String  @map("id_crm") @db.VarChar(20)
+  npwp                String  @map("npwp") @db.VarChar(30)
+  idProgram           String  @map("id_program") @db.VarChar(50)
+  userInsert          String  @map("user_insert") @db.VarChar(50)
+  userName            String  @map("user_name") @db.VarChar(50)
+  password            String  @map("password") @db.VarChar(50)
+  aktif               Aktif   @map("aktif")
+  verified            String  @map("verified") @default("") @db.VarChar(50)
+  foto                String  @map("foto") @db.VarChar(100)
+  idKoordinator       String  @map("id_koordinator") @db.VarChar(20)
+  session             String  @map("session") @db.VarChar(100)
+  note                String  @map("note") @db.Text
+  idHubung            String  @map("id_hubung") @db.VarChar(30)
+  idPelayanan         Int     @map("id_pelayanan")
+  idProfiling         Int     @map("id_profiling")
+  updated             DateTime @map("updated")
+  sendEmail           String  @map("send_email") @db.VarChar(200)
+  dtu                 DateTime @map("dtu") @default(now())
+  whatsapp            String? @map("whatsapp") @db.VarChar(30)
+  lastTransaction     DateTime @map("last_transaction") @db.Date
+  emailValid          String? @map("email_valid") @db.VarChar(100)
+  emailCheck          Int?    @map("email_check")
+  bidIndComm          String  @map("bid_ind_comm") @db.VarChar(50)
+
+  // Relations
+  kantor              HcmKantor @relation(fields: [idKantor], references: [idKantor])
+  transaksi           CorezTransaksi[]
+  transaksiClaim      CorezTransaksiClaim[]
+  transaksiScrap      CorezTransaksiScrap[]
+
+  @@map("corez_donatur")
+}
+
+model CorezTransaksi {
+  idTransaksi         String  @id @map("id_transaksi") @db.VarChar(50)
+  idViaBayar          Int     @map("id_via_bayar")
+  idDonatur           String  @map("id_donatur") @db.VarChar(20)
+  detailid            Int     @map("detailid")
+  idProgram           Int     @map("id_program")
+  idProgramClaim      String  @map("id_program_claim") @db.VarChar(30)
+  coaDebet            String  @map("coa_debet") @db.VarChar(14)
+  coaKredit           String  @map("coa_kredit") @db.VarChar(14)
+  quantity            Int     @map("quantity")
+  transaksi           Float   @map("transaksi") @db.Double
+  tglTransaksi        DateTime @map("tgl_transaksi")
+  idKantorTransaksi   Int     @map("id_kantor_transaksi")
+  idKantorDonatur     Int     @map("id_kantor_donatur")
+  idPenghimpunan      Int     @map("id_penghimpunan")
+  idViaHimpun         String  @map("id_via_himpun") @db.VarChar(50)
+  idCaraBayar         String  @map("id_cara_bayar") @db.VarChar(36)
+  idNc                Int?    @map("id_nc")
+  idCrm               String? @map("id_crm") @db.VarChar(100)
+  idClaim             String? @map("id_claim") @db.VarChar(15)
+  idPositionClaim     String? @map("id_position_claim") @db.VarChar(6)
+  cdt                 DateTime @map("cdt")
+  approvedTransaksi   ApprovedTransaksi @map("approved_transaksi") @default(n)
+  tglDonasi           DateTime? @map("tgl_donasi") @db.Date
+  keterangan          String  @map("keterangan") @db.Text
+  userInsert          String  @map("user_insert") @db.VarChar(20)
+  noBukti             String  @map("no_bukti") @db.VarChar(20)
+  cur                 String  @map("cur") @default("IDR") @db.Char(3)
+  viaInput            String  @map("ViaInput") @default("1") @db.VarChar(50)
+  note                String  @map("note") @db.Text
+  sendSms             String? @map("send_sms") @db.VarChar(15)
+  sendEmail           String? @map("send_email") @db.VarChar(50)
+  sendWhatsapp        String? @map("send_whatsapp") @db.VarChar(15)
+  dp                  Float   @map("dp") @db.Double
+  rekapid             String? @map("rekapid") @db.VarChar(20)
+  idAffiliate         String  @map("id_affiliate") @db.VarChar(20)
+  grouptrx            String  @map("grouptrx") @db.VarChar(50)
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  donatur             CorezDonatur @relation(fields: [idDonatur], references: [idDonatur])
+  kantorTransaksi     HcmKantor @relation(fields: [idKantorTransaksi], references: [idKantor])
+  program             SettingProgram @relation(fields: [idProgram], references: [idProgram])
+
+  @@map("corez_transaksi")
+}
+
+model CorezTransaksiClaim {
+  idTransaksi         String  @id @map("id_transaksi") @db.VarChar(50)
+  idViaBayar          Int     @map("id_via_bayar")
+  idDonatur           String  @map("id_donatur") @db.VarChar(20)
+  detailid            Int     @map("detailid")
+  idProgram           Int     @map("id_program")
+  idProgramClaim      String  @map("id_program_claim") @db.VarChar(30)
+  coaDebet            String  @map("coa_debet") @db.VarChar(14)
+  coaKredit           String  @map("coa_kredit") @db.VarChar(14)
+  quantity            Int     @map("quantity")
+  transaksi           Float   @map("transaksi") @db.Double
+  tglTransaksi        DateTime @map("tgl_transaksi")
+  idKantorTransaksi   Int     @map("id_kantor_transaksi")
+  idKantorDonatur     Int     @map("id_kantor_donatur")
+  idPenghimpunan      Int     @map("id_penghimpunan")
+  idViaHimpun         String? @map("id_via_himpun") @db.VarChar(20)
+  idCaraBayar         String  @map("id_cara_bayar") @db.VarChar(36)
+  idNc                Int?    @map("id_nc")
+  idCrm               String? @map("id_crm") @db.VarChar(100)
+  idClaim             String  @map("id_claim") @db.VarChar(20)
+  idPositionClaim     String? @map("id_position_claim") @db.VarChar(6)
+  cdt                 DateTime @map("cdt")
+  approvedTransaksi   ApprovedTransaksi @map("approved_transaksi") @default(n)
+  tglDonasi           DateTime? @map("tgl_donasi") @db.Date
+  keterangan          String  @map("keterangan") @db.Text
+  userInsert          String  @map("user_insert") @db.VarChar(20)
+  noBukti             String  @map("no_bukti") @db.VarChar(20)
+  cur                 String  @map("cur") @default("IDR") @db.Char(3)
+  viaInput            String  @map("ViaInput") @default("1") @db.VarChar(50)
+  note                String  @map("note") @db.Text
+  sendSms             String? @map("send_sms") @db.VarChar(15)
+  sendEmail           String? @map("send_email") @db.VarChar(50)
+  sendWhatsapp        String? @map("send_whatsapp") @db.VarChar(15)
+  dp                  Float   @map("dp") @db.Double
+  rekapid             String? @map("rekapid") @db.Text
+  idAffiliate         String  @map("id_affiliate") @db.VarChar(20)
+  grouptrx            String  @map("grouptrx") @db.VarChar(50)
+  userApprove         String  @map("user_approve") @db.VarChar(20)
+  tglApprove          DateTime? @map("tgl_approve") @db.Date
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  donatur             CorezDonatur @relation(fields: [idDonatur], references: [idDonatur])
+
+  @@map("corez_transaksi_claim")
+}
+
+model CorezTransaksiScrap {
+  idTransaksi         String  @id @map("id_transaksi") @db.VarChar(50)
+  idViaBayar          Int     @map("id_via_bayar")
+  idDonatur           String  @map("id_donatur") @db.VarChar(20)
+  detailid            Int     @map("detailid")
+  idProgram           Int     @map("id_program")
+  idProgramClaim      String  @map("id_program_claim") @db.VarChar(30)
+  coaDebet            String  @map("coa_debet") @db.VarChar(14)
+  coaKredit           String  @map("coa_kredit") @db.VarChar(14)
+  quantity            Int     @map("quantity")
+  transaksi           Float   @map("transaksi") @db.Double
+  tglTransaksi        DateTime @map("tgl_transaksi")
+  idKantorTransaksi   Int     @map("id_kantor_transaksi")
+  idKantorDonatur     Int     @map("id_kantor_donatur")
+  idPenghimpunan      Int     @map("id_penghimpunan")
+  idViaHimpun         String? @map("id_via_himpun") @db.VarChar(20)
+  idCaraBayar         String  @map("id_cara_bayar") @db.VarChar(36)
+  idNc                Int?    @map("id_nc")
+  idCrm               String? @map("id_crm") @db.VarChar(100)
+  idClaim             String? @map("id_claim") @db.VarChar(15)
+  idPositionClaim     String? @map("id_position_claim") @db.VarChar(6)
+  cdt                 DateTime @map("cdt")
+  approvedTransaksi   ApprovedTransaksi @map("approved_transaksi") @default(n)
+  tglDonasi           DateTime? @map("tgl_donasi") @db.Date
+  keterangan          String  @map("keterangan") @db.Text
+  userInsert          String  @map("user_insert") @db.VarChar(20)
+  noBukti             String  @map("no_bukti") @db.VarChar(20)
+  cur                 String  @map("cur") @default("IDR") @db.Char(3)
+  viaInput            String  @map("ViaInput") @default("1") @db.VarChar(50)
+  note                String  @map("note") @db.Text
+  sendSms             String? @map("send_sms") @db.VarChar(15)
+  sendEmail           String? @map("send_email") @db.VarChar(50)
+  sendWhatsapp        String? @map("send_whatsapp") @db.VarChar(15)
+  dp                  Float   @map("dp") @db.Double
+  rekapid             String? @map("rekapid") @db.VarChar(20)
+  idAffiliate         String  @map("id_affiliate") @db.VarChar(20)
+  grouptrx            String  @map("grouptrx") @db.VarChar(50)
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  donatur             CorezDonatur @relation(fields: [idDonatur], references: [idDonatur])
+
+  @@map("corez_transaksi_scrap")
+}
+
+// =============================================
+// HCM TABLES - Human Capital Management
+// =============================================
+
+model HcmKantor {
+  idKantor            Int     @id @default(autoincrement()) @map("id_kantor")
+  kantor              String  @map("kantor") @db.VarChar(100)
+  alamat              String  @map("alamat") @default("") @db.VarChar(100)
+  kota                String  @map("kota") @db.VarChar(50)
+  keterangan          String  @map("keterangan") @db.VarChar(200)
+  telpon              String  @map("telpon") @db.VarChar(30)
+  fax                 String  @map("fax") @db.VarChar(30)
+  aktif               AktifKantor @map("aktif") @default(y)
+  idKantorParent      Int     @map("id_kantor_parent")
+  idKantorLevel       Int     @map("id_kantor_level")
+  idKantorold         String  @map("id_kantorold") @db.VarChar(10)
+  omid                String  @map("omid") @db.VarChar(6)
+  coa                 String  @map("coa") @db.VarChar(15)
+  coaNoncash          String  @map("coa_noncash") @db.VarChar(15)
+  ll                  String  @map("ll") @db.VarChar(100)
+  propinsi            String  @map("propinsi") @db.VarChar(50)
+  isAnggaran          AktifKantor @map("is_anggaran") @default(y)
+  amilVirtualOffice   String? @map("amil_virtual_office") @db.VarChar(25)
+  updated             DateTime @map("updated")
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  donatur             CorezDonatur[]
+  transaksi           CorezTransaksi[]
+  karyawan            HcmKaryawan[]
+  kantorLevel         HcmKantorLevel @relation(fields: [idKantorLevel], references: [idKantorLevel])
+
+  @@map("hcm_kantor")
+}
+
+model HcmKantorJabatan {
+  idJabatan           Int     @id @default(autoincrement()) @map("id_jabatan")
+  jabatan             String  @map("jabatan") @db.VarChar(100)
+  kode                String  @map("kode") @db.VarChar(10)
+  idJabatanParent     Int     @map("id_jabatan_parent")
+  aktif               AktifKantor @map("aktif")
+  apps                String  @map("apps") @db.Text
+  idAppsGroupDefault  String  @map("id_apps_group_default") @db.VarChar(10)
+  keterangan          String  @map("keterangan") @db.VarChar(200)
+  idExpendLevel       Int     @map("id_expend_level")
+  idReceiptLevel      Int     @map("id_receipt_level")
+  idDivisi            String  @map("id_divisi") @db.VarChar(4)
+  fundingApp          String  @map("funding_app") @db.Text
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  karyawan            HcmKaryawan[]
+
+  @@map("hcm_kantor_jabatan")
+}
+
+model HcmKantorLevel {
+  idKantorLevel       Int     @id @map("id_kantor_level")
+  kantorLevel         String  @map("kantor_level") @db.VarChar(50)
+  kantorLevelCode     String  @map("kantor_level_code") @db.VarChar(10)
+  active              AktifKantor @map("active")
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  kantor              HcmKantor[]
+
+  @@map("hcm_kantor_level")
+}
+
+model HcmKaryawan {
+  idKaryawan          String  @id @map("id_karyawan") @db.Char(15)
+  karyawan            String  @map("karyawan") @db.VarChar(100)
+  panggilan           String  @map("panggilan") @db.VarChar(50)
+  jk                  JenisKelamin @map("jk") @default(l)
+  tempatLahir         String  @map("tempat_lahir") @db.VarChar(50)
+  tglLahir            DateTime? @map("tgl_lahir") @db.Date
+  identitasid         Int     @map("identitasid")
+  noIdentitas         String  @map("no_identitas") @db.VarChar(30)
+  tglMasuk            DateTime? @map("tgl_masuk") @updatedAt
+  alamat              String  @map("alamat") @db.Text
+  kota                String  @map("kota") @db.VarChar(50)
+  ll                  String  @map("ll") @db.VarChar(100)
+  lain                String  @map("lain") @db.Text
+  nikah               String  @map("nikah") @db.VarChar(30)
+  email               String  @map("email") @db.VarChar(100)
+  telpon              String  @map("telpon") @db.VarChar(30)
+  hp                  String  @map("hp") @db.VarChar(30)
+  nikInput            String  @map("nik_input") @db.VarChar(20)
+  updated             DateTime @map("updated") @default(now())
+  idKaryawanParent    String  @map("id_karyawan_parent") @db.VarChar(20)
+  updatedDate         DateTime? @map("updated_date")
+  idJabatan           Int     @map("id_jabatan")
+  idDonatur           String  @map("id_donatur") @db.VarChar(20)
+  aktif               AktifKantor @map("aktif") @default(y)
+  idKantor            Int     @map("id_kantor")
+  grup                String  @map("grup") @db.VarChar(20)
+  statusKaryawan      StatusKaryawan @map("status_karyawan")
+  tglAwalKontrak      DateTime? @map("tgl_awal_kontrak") @db.Date
+  tglAkhirKontrak     DateTime? @map("tgl_akhir_kontrak") @db.Date
+  idPangkat           Int     @map("id_pangkat")
+  note                String  @map("note") @db.Text
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  kantor              HcmKantor @relation(fields: [idKantor], references: [idKantor])
+  jabatan             HcmKantorJabatan @relation(fields: [idJabatan], references: [idJabatan])
+  pangkat             HcmPangkat @relation(fields: [idPangkat], references: [idPangkat])
+
+  @@map("hcm_karyawan")
+}
+
+model HcmPangkat {
+  idPangkat           Int     @id @map("id_pangkat")
+  pangkatKaryawan     String  @map("pangkat_karyawan") @db.VarChar(30)
+  deskripsiPangkat    String  @map("deskripsi_pangkat") @db.VarChar(100)
+  aktif               StatusPangkat @map("aktif")
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  karyawan            HcmKaryawan[]
+
+  @@map("hcm_pangkat")
+}
+
+// =============================================
+// SETTING TABLES
+// =============================================
+
+model SettingProgram {
+  idProgram           Int     @id @map("id_program")
+  program             String  @map("program") @db.VarChar(100)
+  idProgramParent     Int     @map("id_program_parent")
+  idSumberDana        Int     @map("id_sumber_dana")
+  coaIndividu         String  @map("coa_individu") @db.VarChar(14)
+  coaEntitas          String  @map("coa_entitas") @db.VarChar(14)
+  coa1                String  @map("coa1") @db.VarChar(14)
+  coa2                String  @map("coa2") @db.VarChar(14)
+  dp                  Float   @map("dp") @db.Double
+  level               Int     @map("level")
+  parent              Parent  @map("parent") @default(y)
+  jenis               JenisProgram @map("jenis")
+  idProgramDepag      Int     @map("id_program_depag")
+  nom                 Float   @map("nom") @db.Double
+  nomEditable         Editable @map("nom_editable") @default(y)
+  spc                 Special @map("spc") @default(n)
+  aktif               AktifKantor @map("aktif") @default(y)
+  sort                Float   @map("sort") @db.Double
+  note                String  @map("note") @db.Text
+  early               DateTime? @map("early") @db.Date
+  end                 DateTime? @map("end") @db.Date
+  idProgramTemp       String  @map("id_program_temp") @db.VarChar(6)
+  flag                String? @map("flag") @db.VarChar(25)
+  updated             DateTime @map("updated") @default(now())
+  dtu                 DateTime @map("dtu") @default(now())
+
+  // Relations
+  transaksi           CorezTransaksi[]
+
+  @@map("setting_program")
+}
+
+// =============================================
+// ENUMS
+// =============================================
+
+enum Status {
+  Donatur
+  Mitra
+  UPZ
+  Kotak
+}
+
+enum JenisKelamin {
+  l
+  p
+  x
+}
+
+enum Agama {
+  Islam
+  Katolik
+  Protestan
+  Budha
+  Hindu
+  Konghucu
+  Kepercayaan
+  Lainnya
+}
+
+enum Aktif {
+  y
+  n
+  p
+  u
+}
+
+enum ApprovedTransaksi {
+  y
+  n
+  na
+  r
+}
+
+enum AktifKantor {
+  y
+  n
+}
+
+enum StatusKaryawan {
+  Kontrak
+  Tetap
+  Parttime
+  Outsource
+  Magang
+}
+
+enum StatusPangkat {
+  Aktif
+  TidakAktif
+}
+
+enum Parent {
+  y
+  n
+}
+
+enum JenisProgram {
+  r
+  e
+  s
+  f
+}
+
+enum Editable {
+  y
+  n
+}
+
+enum Special {
+  y
+  n
+}
