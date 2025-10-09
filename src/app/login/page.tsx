@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('kevin.adhyatama@dtpeduli.org')
@@ -33,10 +34,10 @@ export default function LoginPage() {
         <div className="bg-white rounded-3xl w-full shadow-2xl overflow-hidden">
           <div className="bg-cover bg-center p-6 relative" style={{backgroundImage: `linear-gradient(to bottom, rgba(30, 74, 179, 0.7), rgba(36, 83, 199, 0.7)), url('https://i.imgur.com/fE9xsga.jpeg')`}}>
             <div className="absolute left-6 top-6">
-              <img src="https://erp.dtpeduli.org/assets/2025-06/2506183HM7B6.png" alt="dtpeduli" className="h-7 w-auto drop-shadow" />
+              <Image src="https://erp.dtpeduli.org/assets/2025-06/2506183HM7B6.png" alt="dtpeduli" width={28} height={28} className="h-7 w-auto drop-shadow" />
             </div>
             <div className="flex flex-col justify-center items-center gap-3 py-12">
-              <img src="https://i.imgur.com/hd2Ueeq.png" alt="Logo FND" className="h-16 w-auto drop-shadow-lg" />
+              <Image src="https://i.imgur.com/hd2Ueeq.png" alt="Logo FND" width={64} height={64} className="h-16 w-auto drop-shadow-lg" />
             </div>
           </div>
           <div className="p-6 md:p-8">

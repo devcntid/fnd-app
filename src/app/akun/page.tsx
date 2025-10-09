@@ -1,9 +1,18 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
+
+interface User {
+  email: string
+  karyawan?: {
+    karyawan: string
+    avatar?: string
+  }
+}
 
 export default function AkunPage() {
-  const [me, setMe] = useState<any>(null)
+  const [me, setMe] = useState<User | null>(null)
 
   useEffect(() => {
     fetch('/api/auth/me').then(async r=>{
@@ -17,7 +26,7 @@ export default function AkunPage() {
     <main className="p-4 space-y-5">
       <h2 className="text-2xl font-bold text-white">Akun Saya</h2>
       <div className="bg-white/90 backdrop-blur-sm rounded-xl p-5 flex items-center gap-4 shadow">
-        <img src={me?.karyawan?.avatar || 'https://placehold.co/64x64/f39c12/ffffff?text=A'} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
+        <Image src={me?.karyawan?.avatar || 'https://placehold.co/64x64/f39c12/ffffff?text=A'} width={64} height={64} className="w-16 h-16 rounded-full object-cover" alt="Avatar" />
         <div className="flex-grow">
           <p className="font-bold text-xl text-gray-800">{me?.karyawan?.karyawan || 'Memuat...'}</p>
           <p className="text-gray-500">{me?.email}</p>

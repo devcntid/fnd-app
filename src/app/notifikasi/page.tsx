@@ -6,7 +6,6 @@ import { Navigation } from '@/components/layout/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { CalendarClock, Award, CalendarCheck, TrendingUp } from 'lucide-react'
 import { mockNotifications } from '@/lib/mock-data'
-import { formatDateTime } from '@/lib/utils'
 
 export default function NotifikasiPage() {
   const handleNotificationClick = () => {

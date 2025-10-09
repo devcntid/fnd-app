@@ -1,7 +1,6 @@
 import { PrismaClient } from '../../prisma/generated/zains-client'
 
 declare global {
-  // eslint-disable-next-line no-var
   var prismaZains: PrismaClient | undefined
 }
 

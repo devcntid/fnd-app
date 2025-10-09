@@ -3,6 +3,7 @@
 import { Home, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 interface NavigationProps {
   currentPage?: string
@@ -45,8 +46,10 @@ export function Navigation({ currentPage = 'home', onPageChange, onQuickReportCl
             )}
           >
             <div className="w-full h-full flex items-center justify-center">
-              <img 
+              <Image 
                 src="https://i.imgur.com/4QlWXM3.png" 
+                width={56}
+                height={56}
                 className={cn(
                   "w-14 h-14 -rotate-45 filter transition-all duration-200",
                   isReportActive ? "grayscale-0" : "grayscale"

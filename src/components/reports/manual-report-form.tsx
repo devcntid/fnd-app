@@ -7,8 +7,19 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 
+interface FormData {
+  donaturName: string
+  donaturHp: string
+  donaturAddress: string
+  akadProgram: string
+  donationAmount: string
+  transactionTime: string
+  nextVisitSchedule: string
+  nextVisitDate: string
+}
+
 interface ManualReportFormProps {
-  onSubmit: (data: any) => void
+  onSubmit: (data: FormData) => void
 }
 
 export function ManualReportForm({ onSubmit }: ManualReportFormProps) {

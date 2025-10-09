@@ -14,7 +14,15 @@ export default function LaporanCepatPage() {
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [showIdDetected, setShowIdDetected] = useState(false)
-  const [scannedData, setScannedData] = useState<any>(null)
+  const [scannedData, setScannedData] = useState<{
+    id: string
+    name: string
+    phone: string
+    address: string
+    cabang: string
+    tgl_registrasi: string
+    type: 'kencleng' | 'kalimat'
+  } | null>(null)
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category)
@@ -28,7 +36,16 @@ export default function LaporanCepatPage() {
   const handleScanQR = () => setShowQRScanner(true)
   const handleManualReport = () => setShowManualForm(true)
 
-  const handleManualFormSubmit = (data: any) => {
+  const handleManualFormSubmit = (data: {
+    donaturName: string
+    donaturHp: string
+    donaturAddress: string
+    akadProgram: string
+    donationAmount: string
+    transactionTime: string
+    nextVisitSchedule: string
+    nextVisitDate: string
+  }) => {
     console.log('Manual form submitted:', data)
     setShowManualForm(false)
   }
@@ -43,19 +60,35 @@ export default function LaporanCepatPage() {
       address: 'Jl. Gegerkalong Girang No. 67, Bandung',
       cabang: 'DT Peduli Bandung',
       tgl_registrasi: '2025-01-01',
-      type: isKencleng ? 'kencleng' : 'kalimat'
+      type: (isKencleng ? 'kencleng' : 'kalimat') as 'kencleng' | 'kalimat'
     }
     setScannedData(mockScannedData)
     setShowIdDetected(true)
   }
 
-  const handleIdDetectedSave = (data: any) => {
+  const handleIdDetectedSave = (data: {
+    name: string
+    phone: string
+    address: string
+    cabang: string
+    tgl_registrasi: string
+    nextVisit: string
+    customDate: string
+  }) => {
     console.log('ID detected save:', data)
     setShowIdDetected(false)
     setScannedData(null)
   }
 
-  const handleIdDetectedJemput = (data: any) => {
+  const handleIdDetectedJemput = (data: {
+    name: string
+    phone: string
+    address: string
+    cabang: string
+    tgl_registrasi: string
+    nextVisit: string
+    customDate: string
+  }) => {
     console.log('ID detected jemput:', data)
     setShowIdDetected(false)
     setScannedData(null)

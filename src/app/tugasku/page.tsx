@@ -19,7 +19,7 @@ export default function TugaskuPage() {
     console.log('Search:', query)
   }
 
-  const handleTaskClick = (task: any) => {
+  const handleTaskClick = (task: typeof mockTasks[0]) => {
     console.log('Task clicked:', task)
     // Navigate to quick report page
   }

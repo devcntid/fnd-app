@@ -14,8 +14,8 @@ import { formatDate } from '@/lib/utils'
 
 export default function LaporanDonaturPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [selectedDonor, setSelectedDonor] = useState<any>(null)
+  const [searchResults, setSearchResults] = useState<typeof mockDonors>([])
+  const [selectedDonor, setSelectedDonor] = useState<typeof mockDonors[0] | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
 
@@ -43,7 +43,7 @@ export default function LaporanDonaturPage() {
     }
   }
 
-  const handleDonorSelect = (donor: any) => {
+  const handleDonorSelect = (donor: typeof mockDonors[0]) => {
     setSelectedDonor(donor)
     setShowDetail(true)
     setShowResults(false)

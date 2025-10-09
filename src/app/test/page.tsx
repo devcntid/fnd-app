@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 
 export default function TestPage() {
   const [isLoading, setIsLoading] = useState(true)
-  const [testResults, setTestResults] = useState<any[]>([])
+  const [testResults, setTestResults] = useState<Array<{ name: string; status: string; message: string }>>([])
 
   useEffect(() => {
     // Simulate loading

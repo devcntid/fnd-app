@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { AppWrapper } from '@/components/layout/app-wrapper'
 import { Header } from '@/components/layout/header'
 import { Navigation } from '@/components/layout/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { X } from 'lucide-react'
+import Image from 'next/image'
 
 interface IdDetectedProps {
   scannedData: {
@@ -22,8 +23,24 @@ interface IdDetectedProps {
     type: 'kencleng' | 'kalimat'
   }
   onClose: () => void
-  onSave: (data: any) => void
-  onJemput: (data: any) => void
+  onSave: (data: {
+    name: string
+    phone: string
+    address: string
+    cabang: string
+    tgl_registrasi: string
+    nextVisit: string
+    customDate: string
+  }) => void
+  onJemput: (data: {
+    name: string
+    phone: string
+    address: string
+    cabang: string
+    tgl_registrasi: string
+    nextVisit: string
+    customDate: string
+  }) => void
 }
 
 export function IdDetected({ scannedData, onClose, onSave, onJemput }: IdDetectedProps) {
@@ -76,9 +93,11 @@ export function IdDetected({ scannedData, onClose, onSave, onJemput }: IdDetecte
         </div>
 
         <div className="text-center">
-          <img 
+          <Image 
             src={getVisualImage()}
             alt="Visual Donasi" 
+            width={288}
+            height={288}
             className="h-72 mx-auto float-animation"
           />
           <p className="text-xl font-bold text-gray-800 mt-2 mb-4">

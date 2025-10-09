@@ -12,7 +12,7 @@ export async function GET() {
     const karyawan = await prisma.hcmKaryawan.findUnique({ where: { idKaryawan: payload.idKaryawan } })
     if (!karyawan) return NextResponse.json({ ok: false }, { status: 401 })
     return NextResponse.json({ ok: true, user: { ...payload, karyawan } })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 }

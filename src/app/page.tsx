@@ -146,7 +146,8 @@ export default function HomePage() {
 
       case 'summary':
         const totalCapaian = Object.values(appData).reduce((sum, category) => {
-          return sum + (category.capaian || 0) + (category.donasi || 0)
+          const categoryData = category as { capaian?: number; donasi?: number }
+          return sum + (categoryData.capaian || 0) + (categoryData.donasi || 0)
         }, 0)
 
         return (

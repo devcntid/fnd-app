@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/header'
 import { Navigation } from '@/components/layout/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, FileText, BookOpen, Clipboard, Image } from 'lucide-react'
+import { ArrowLeft, FileText, BookOpen, Clipboard, Image as ImageIcon } from 'lucide-react'
 import { mockMarketingTools } from '@/lib/mock-data'
 import { formatDate } from '@/lib/utils'
 
@@ -22,7 +22,7 @@ export default function ToolsPage() {
     window.history.back()
   }
 
-  const handleDownload = (tool: any) => {
+  const handleDownload = (tool: typeof mockMarketingTools[0]) => {
     console.log('Download:', tool)
   }
 
@@ -35,7 +35,7 @@ export default function ToolsPage() {
       case 'proposal':
         return <Clipboard className="w-5 h-5" />
       case 'marketing':
-        return <Image className="w-5 h-5" />
+        return <ImageIcon className="w-5 h-5" />
       default:
         return <FileText className="w-5 h-5" />
     }

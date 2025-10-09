@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Search, Bell, X } from 'lucide-react'
+import Image from 'next/image'
 
 interface HeaderProps {
   notificationCount?: number
@@ -36,16 +37,20 @@ export function Header({ notificationCount = 4, onSearch, onNotificationClick }:
         {!isSearchOpen ? (
           <>
             <div className="flex-1 flex justify-start">
-              <img 
+              <Image 
                 src="https://i.imgur.com/hd2Ueeq.png" 
                 alt="Logo FND" 
+                width={32}
+                height={32}
                 className="h-8 w-auto"
               />
             </div>
             <div className="flex-shrink-0">
-              <img 
+              <Image 
                 src="https://erp.dtpeduli.org/assets/2025-06/2506183HM7B6.png" 
                 alt="Logo DT Peduli" 
+                width={44}
+                height={44}
                 className="h-11 w-auto"
               />
             </div>
