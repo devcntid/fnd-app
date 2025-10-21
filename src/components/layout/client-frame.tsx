@@ -8,14 +8,13 @@ import { Navigation } from '@/components/layout/navigation'
 export default function ClientFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname() || ''
   const isLogin = pathname.startsWith('/login')
+  const isVerify = pathname.startsWith('/verify')
 
   return (
     <>
-      {!isLogin && <Header notificationCount={4} />}
+      {!isLogin && !isVerify && <Header notificationCount={4} />}
       {children}
-      {!isLogin && <Navigation />}
+      {!isLogin && !isVerify && <Navigation />}
     </>
   )
 }
-
-

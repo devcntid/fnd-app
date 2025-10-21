@@ -10,11 +10,14 @@ const PUBLIC_PATHS = [
   '/api/auth/login',
   '/api/auth/logout',
   '/api/auth/me',
+  '/api/verify',
+  '/verify',
 ]
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
-  if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) return NextResponse.next()
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p)))
+    return NextResponse.next()
 
   const hasSession = req.cookies.get(SESSION_COOKIE)?.value
   if (!hasSession) {
@@ -27,10 +30,5 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   // Protect all pages except API routes and the ones we explicitly allow in PUBLIC_PATHS
-  matcher: [
-    '/((?!api/).*)',
-    '/api/auth/(.*)',
-  ],
+  matcher: ['/((?!api/).*)', '/api/auth/(.*)'],
 }
-
-
