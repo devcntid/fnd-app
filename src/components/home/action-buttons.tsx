@@ -7,7 +7,10 @@ interface ActionButtonsProps {
   onLaporanDonaturClick: () => void
 }
 
-export function ActionButtons({ onToolsClick, onLaporanDonaturClick }: ActionButtonsProps) {
+export function ActionButtons({
+  onToolsClick,
+  onLaporanDonaturClick,
+}: ActionButtonsProps) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <button

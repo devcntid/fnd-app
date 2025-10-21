@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GridMenu } from '@/components/home/grid-menu'
 import { ActionButtons } from '@/components/home/action-buttons'
+import { EventManagement } from '@/components/home/event-management'
 import { formatCurrency } from '@/lib/utils'
 import { mockAppData } from '@/lib/mock-data'
 
@@ -175,6 +176,14 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
+          </div>
+        )
+
+      case 'event':
+        return (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-white">Aktivitas Event</h2>
+            <EventManagement />
           </div>
         )
 
