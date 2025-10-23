@@ -38,7 +38,7 @@ export default function VerificationPage() {
         } else {
           setError(result.message || 'Data tidak ditemukan')
         }
-      } catch (err) {
+      } catch {
         setError('Terjadi kesalahan saat memuat data')
       } finally {
         setLoading(false)

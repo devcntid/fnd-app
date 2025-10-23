@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import {
-  ArrowLeft,
   Download,
   CheckSquare,
   Calendar,
@@ -12,7 +11,6 @@ import {
   Edit,
   Trash2,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 
 interface Event {
   id: number
@@ -35,12 +33,9 @@ interface Event {
 }
 
 export function EventManagement() {
-  const router = useRouter()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [showModal, setShowModal] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [showEditForm, setShowEditForm] = useState(false)
   const [showRealisasiForm, setShowRealisasiForm] = useState(false)
@@ -128,14 +123,6 @@ export function EventManagement() {
       month: 'long',
       year: 'numeric',
     })
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(amount)
   }
 
   const formatNumber = (value: string | number) => {
@@ -973,8 +960,8 @@ export function EventManagement() {
                 Konfirmasi Hapus Event
               </h3>
               <p className="text-sm text-gray-500 mb-6">
-                Apakah Anda yakin ingin menghapus event "{eventToDelete.nama}"?
-                Tindakan ini tidak dapat dibatalkan.
+                Apakah Anda yakin ingin menghapus event &quot;
+                {eventToDelete.nama}&quot;? Tindakan ini tidak dapat dibatalkan.
               </p>
             </div>
 
@@ -1025,14 +1012,6 @@ function EventCard({
     })
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
-
   const formatNumber = (value: string | number) => {
     const num = typeof value === 'string' ? parseInt(value) || 0 : value
     return new Intl.NumberFormat('id-ID').format(num)
@@ -1061,8 +1040,12 @@ function EventCard({
             alt={`Poster ${event.nama}`}
             className="w-full h-32 object-cover rounded-lg"
             onError={(e) => {
-              e.currentTarget.style.display = 'none'
-              e.currentTarget.nextElementSibling.style.display = 'block'
+              const target = e.currentTarget as HTMLImageElement
+              target.style.display = 'none'
+              const nextElement = target.nextElementSibling as HTMLElement
+              if (nextElement) {
+                nextElement.style.display = 'block'
+              }
             }}
           />
         ) : null}
@@ -1109,7 +1092,7 @@ function EventCard({
               <div>
                 Donasi:{' '}
                 <span className="text-orange-600 font-medium">
-                  {formatCurrency(event.nominal_donasi)}
+                  Rp {formatNumber(event.nominal_donasi)}
                 </span>
               </div>
               <div>

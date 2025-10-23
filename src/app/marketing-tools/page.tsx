@@ -83,7 +83,7 @@ export default function MarketingToolsPage() {
       case 'video':
         return <Calendar className="w-6 h-6" />
       case 'gambar':
-        return <Image className="w-6 h-6" />
+        return <Image className="w-6 h-6" aria-label="Gambar" />
       default:
         return <BookOpen className="w-6 h-6" />
     }
