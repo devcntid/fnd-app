@@ -1033,6 +1033,11 @@ function EventCard({
     }).format(amount)
   }
 
+  const formatNumber = (value: string | number) => {
+    const num = typeof value === 'string' ? parseInt(value) || 0 : value
+    return new Intl.NumberFormat('id-ID').format(num)
+  }
+
   return (
     <div className="bg-gray-50 rounded-xl p-4">
       {/* Status Badge */}
