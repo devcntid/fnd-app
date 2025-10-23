@@ -51,7 +51,21 @@ export async function PATCH(
       flyer,
     } = body
 
-    let updateData: any = {
+    const updateData: {
+      updated_at: Date
+      nominal_donasi?: number
+      realisasi_peserta?: number
+      lead?: number
+      evaluasi?: string | null
+      nama?: string
+      tgl_event?: Date
+      target_peserta?: number
+      lokasi?: string
+      kota?: string
+      jenis_event?: string
+      file_proposal?: string
+      flyer?: string
+    } = {
       updated_at: new Date(),
     }
 

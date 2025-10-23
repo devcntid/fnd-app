@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
 
 const SESSION_COOKIE = 'fnd_session'
 
@@ -15,10 +14,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    const payload = JSON.parse(
-      Buffer.from(cookie.value, 'base64').toString('utf8')
-    )
-
     // Get filter parameters from URL
     const { searchParams } = new URL(request.url)
     const tahun = searchParams.get('tahun')
@@ -45,7 +40,12 @@ export async function GET(request: Request) {
       bulan === 'all' ? new Date(filterYear, 11, 31, 23, 59, 59) : endDate
 
     // Get leaderboard data using raw query since we need to join
-    const leaderboardData = await prisma.$queryRaw<any[]>`
+    interface LeaderboardRow {
+      nama: string
+      capaian: number
+    }
+
+    const leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
       SELECT 
         hcm_karyawan.karyawan as nama,
         COALESCE(SUM(corez_transaksi.transaksi), 0) as capaian
@@ -63,7 +63,11 @@ export async function GET(request: Request) {
     `
 
     // Get total count
-    const totalCount = await prisma.$queryRaw<any[]>`
+    interface CountRow {
+      total: number
+    }
+
+    const totalCount = await prisma.$queryRaw<CountRow[]>`
       SELECT COUNT(*) as total
       FROM (
         SELECT hcm_karyawan.id_karyawan
