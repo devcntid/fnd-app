@@ -47,16 +47,16 @@ const nextConfig = {
   // Optimize for performance
   compress: true,
   poweredByHeader: false,
-  // Enable React strict mode
-  reactStrictMode: true,
+  // Enable React strict mode (disabled to prevent double rendering in dev)
+  reactStrictMode: false,
   // Note: swcMinify and optimizeFonts are removed in Next 15 with Turbopack
   // Turbopack config
   experimental: {
     // keep existing experimental flags and set turbopack root to this app
     optimizePackageImports: ['lucide-react'],
-    turbopack: {
-      root: __dirname,
-    },
+    // turbopack: {
+    //   root: __dirname,
+    // },
   },
 }
 

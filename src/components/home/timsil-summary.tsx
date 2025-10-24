@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 
 interface TimsilData {
   capaian: number
@@ -23,41 +23,47 @@ export function TimsilSummary() {
   const [leaderboardPage, setLeaderboardPage] = useState(1)
   const [hasMoreLeaderboard, setHasMoreLeaderboard] = useState(true)
 
-  // Get current year and month
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth() + 1
+  // Initialize with default values to avoid hydration mismatch
+  const [selectedYear, setSelectedYear] = useState<string>('2025')
+  const [selectedMonth, setSelectedMonth] = useState<string>('1')
+  const [selectedVerified, setSelectedVerified] = useState<string>('unverified')
 
-  const [selectedYear, setSelectedYear] = useState<string>(
-    currentYear.toString()
-  )
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    currentMonth.toString()
-  )
+  // Set actual current year and month after mount to avoid hydration error
+  useEffect(() => {
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth() + 1
+    setSelectedYear(currentYear.toString())
+    setSelectedMonth(currentMonth.toString())
+  }, [])
 
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(
-        `/api/timsil?tahun=${selectedYear}&bulan=${selectedMonth}`
-      )
-      const result = await response.json()
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(
+          `/api/timsil?tahun=${selectedYear}&bulan=${selectedMonth}&verified=${selectedVerified}`
+        )
+        const result = await response.json()
 
-      if (result.success) {
-        setData(result.data)
+        if (result.success) {
+          setData(result.data)
+        }
+      } catch (error) {
+        console.error('Error fetching Timsil data:', error)
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Error fetching Timsil data:', error)
-    } finally {
-      setLoading(false)
     }
-  }, [selectedYear, selectedMonth])
 
-  const fetchLeaderboard = useCallback(
-    async (page = 1, append = false) => {
+    fetchData()
+  }, [selectedYear, selectedMonth, selectedVerified])
+
+  useEffect(() => {
+    const fetchLeaderboard = async (page = 1, append = false) => {
       try {
         setLeaderboardLoading(true)
         const response = await fetch(
-          `/api/timsil/leaderboard?tahun=${selectedYear}&bulan=${selectedMonth}&page=${page}&limit=5`
+          `/api/timsil/leaderboard?tahun=${selectedYear}&bulan=${selectedMonth}&verified=${selectedVerified}&page=${page}&limit=5`
         )
         const result = await response.json()
 
@@ -75,21 +81,32 @@ export function TimsilSummary() {
       } finally {
         setLeaderboardLoading(false)
       }
-    },
-    [selectedYear, selectedMonth]
-  )
+    }
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
-  useEffect(() => {
     fetchLeaderboard(1, false)
-  }, [fetchLeaderboard])
+  }, [selectedYear, selectedMonth, selectedVerified])
 
-  const loadMoreLeaderboard = () => {
+  const loadMoreLeaderboard = async () => {
     if (!leaderboardLoading && hasMoreLeaderboard) {
-      fetchLeaderboard(leaderboardPage + 1, true)
+      try {
+        setLeaderboardLoading(true)
+        const response = await fetch(
+          `/api/timsil/leaderboard?tahun=${selectedYear}&bulan=${selectedMonth}&verified=${selectedVerified}&page=${
+            leaderboardPage + 1
+          }&limit=5`
+        )
+        const result = await response.json()
+
+        if (result.success) {
+          setLeaderboardData((prev) => [...prev, ...result.data])
+          setHasMoreLeaderboard(result.pagination?.hasMore || false)
+          setLeaderboardPage(leaderboardPage + 1)
+        }
+      } catch (error) {
+        console.error('Error fetching Leaderboard data:', error)
+      } finally {
+        setLeaderboardLoading(false)
+      }
     }
   }
 
@@ -98,6 +115,7 @@ export function TimsilSummary() {
   }
 
   // Generate year options (current year and 2 years back)
+  const currentYear = parseInt(selectedYear) || new Date().getFullYear()
   const yearOptions = []
   for (let i = 0; i <= 2; i++) {
     yearOptions.push(currentYear - i)
@@ -151,7 +169,7 @@ export function TimsilSummary() {
               title="Pilih Tahun"
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-20"
             >
               <option value="all">Semua Tahun</option>
               {yearOptions.map((year) => (
@@ -166,13 +184,24 @@ export function TimsilSummary() {
               title="Pilih Bulan"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
             >
               {monthOptions.map((month) => (
                 <option key={month.value} value={month.value}>
                   {month.label}
                 </option>
               ))}
+            </select>
+
+            {/* Verified dropdown */}
+            <select
+              title="Pilih Status Verified"
+              value={selectedVerified}
+              onChange={(e) => setSelectedVerified(e.target.value)}
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+            >
+              <option value="unverified">Unverified</option>
+              <option value="verified">Verified</option>
             </select>
           </div>
         </div>
@@ -229,7 +258,7 @@ export function TimsilSummary() {
               title="Pilih Tahun untuk Leaderboard"
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-20"
             >
               <option value="all">Semua Tahun</option>
               {yearOptions.map((year) => (
@@ -244,13 +273,24 @@ export function TimsilSummary() {
               title="Pilih Bulan untuk Leaderboard"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
             >
               {monthOptions.map((month) => (
                 <option key={month.value} value={month.value}>
                   {month.label}
                 </option>
               ))}
+            </select>
+
+            {/* Verified dropdown untuk leaderboard */}
+            <select
+              title="Pilih Status Verified untuk Leaderboard"
+              value={selectedVerified}
+              onChange={(e) => setSelectedVerified(e.target.value)}
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+            >
+              <option value="unverified">Unverified</option>
+              <option value="verified">Verified</option>
             </select>
           </div>
         </div>

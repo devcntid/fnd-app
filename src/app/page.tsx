@@ -6,6 +6,7 @@ import { GridMenu } from '@/components/home/grid-menu'
 import { ActionButtons } from '@/components/home/action-buttons'
 import { EventManagement } from '@/components/home/event-management'
 import { TimsilSummary } from '@/components/home/timsil-summary'
+import { KalimatSummary } from '@/components/home/kalimat-summary'
 import { formatCurrency } from '@/lib/utils'
 import { mockAppData } from '@/lib/mock-data'
 
@@ -32,76 +33,7 @@ export default function HomePage() {
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-white">Aktivitas Kalimat</h2>
-            <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
-              <div className="flex justify-between items-center flex-wrap gap-2">
-                <h3 className="font-semibold text-lg text-gray-800">
-                  Ringkasan Kalimat
-                </h3>
-                <div className="flex items-center gap-2">
-                  <select className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option>Nasional</option>
-                    <option>Bandung</option>
-                  </select>
-                  <select className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option>2025</option>
-                  </select>
-                  <select
-                    defaultValue="Juli"
-                    className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option>Juli</option>
-                  </select>
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                  {formatCurrency(appData.kalimat.donasi)}
-                </p>
-                <p className="text-sm font-semibold text-gray-600">
-                  Total Donasi
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center border-t border-gray-100 pt-4">
-                <div>
-                  <p className="text-xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                    {appData.kalimat.aktif}
-                  </p>
-                  <p className="text-xs text-gray-600">Kotak Aktif</p>
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-green-600">
-                    {appData.kalimat.jemput}
-                  </p>
-                  <p className="text-xs text-gray-600">Sudah Jemput</p>
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-red-500">
-                    {appData.kalimat.belumJemput}
-                  </p>
-                  <p className="text-xs text-gray-600">Belum Jemput</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg text-gray-800">
-                  Leaderboard Kalimat
-                </h3>
-                <select
-                  defaultValue="7"
-                  className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">Semua</option>
-                  <option value="7">Juli</option>
-                  <option value="6">Juni</option>
-                </select>
-              </div>
-              <div className="space-y-4">
-                <p className="text-center text-sm text-gray-600">
-                  Belum ada data untuk periode ini.
-                </p>
-              </div>
-            </div>
+            <KalimatSummary />
           </div>
         )
 
@@ -138,14 +70,21 @@ export default function HomePage() {
                   Detail Capaian
                 </h3>
                 <div className="flex items-center gap-2">
-                  <select className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select
+                    title="Pilih Wilayah"
+                    className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
                     <option>Nasional</option>
                     <option>Bandung</option>
                   </select>
-                  <select className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select
+                    title="Pilih Tahun"
+                    className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
                     <option>2025</option>
                   </select>
                   <select
+                    title="Pilih Bulan"
                     defaultValue="Juli"
                     className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >

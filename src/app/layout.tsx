@@ -15,11 +15,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="id">
-      <body className={`${inter.className} antialiased text-gray-800`}>
+      <body
+        className={`${inter.className} antialiased text-gray-800`}
+        suppressHydrationWarning
+      >
         <AppWrapper>
-          <ClientFrame>
-            {children}
-          </ClientFrame>
+          <ClientFrame>{children}</ClientFrame>
         </AppWrapper>
       </body>
     </html>

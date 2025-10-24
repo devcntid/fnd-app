@@ -24,6 +24,26 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const tahun = searchParams.get('tahun')
     const bulan = searchParams.get('bulan')
+    const verified = searchParams.get('verified') || 'unverified'
+
+    console.log('Timsil API - idEmployee from cookie:', idEmployee)
+    console.log(
+      'Timsil API - Tahun:',
+      tahun,
+      'Bulan:',
+      bulan,
+      'Verified:',
+      verified
+    )
+
+    // Debug: Check what id_crm values exist in transaksi_scrap
+    const debugResult = await prisma.$queryRaw<Array<{ id_crm: string }>>`
+      SELECT DISTINCT id_crm 
+      FROM corez_transaksi_scrap 
+      WHERE id_crm IS NOT NULL 
+      LIMIT 10
+    `
+    console.log('Timsil API - Sample id_crm from transaksi_scrap:', debugResult)
 
     // Validate tahun and bulan
     const currentYear = new Date().getFullYear()
@@ -38,57 +58,60 @@ export async function GET(request: Request) {
     const endDate = new Date(filterYear, filterMonth, 0, 23, 59, 59)
 
     // If month is "all", filter by year only
-    const dateFilter =
-      bulan === 'all'
-        ? {
-            tglTransaksi: {
-              gte: new Date(filterYear, 0, 1),
-              lte: new Date(filterYear, 11, 31, 23, 59, 59),
-            },
-          }
-        : {
-            tglTransaksi: {
-              gte: startDate,
-              lte: endDate,
-            },
-          }
+    const dateFilterStart =
+      bulan === 'all' ? new Date(filterYear, 0, 1) : startDate
+    const dateFilterEnd =
+      bulan === 'all' ? new Date(filterYear, 11, 31, 23, 59, 59) : endDate
 
-    // 1. Capaian Timsil: sum corez_transaksi where approved_transaksi = 'y' and id_crm = id_employee
-    const capaianResult = await prisma.corezTransaksi.aggregate({
-      where: {
-        idCrm: idEmployee,
-        approvedTransaksi: 'y',
-        ...dateFilter,
-      },
-      _sum: {
-        transaksi: true,
-      },
-    })
-    const capaian = capaianResult._sum.transaksi || 0
+    // 1. Capaian Timsil: sum from corez_transaksi (verified) or corez_transaksi_scrap (unverified)
+    // where approved_transaksi = 'y' and id_crm = id_employee and id_jenis in (1,5)
+    let capaian = 0
 
-    // Build date filter for kunjungan (using tgl_kunjungan)
-    const kunjunganDateFilter =
-      bulan === 'all'
-        ? {
-            tgl_kunjungan: {
-              gte: new Date(filterYear, 0, 1),
-              lte: new Date(filterYear, 11, 31, 23, 59, 59),
-            },
-          }
-        : {
-            tgl_kunjungan: {
-              gte: startDate,
-              lte: endDate,
-            },
-          }
+    if (verified === 'verified') {
+      // Use corez_transaksi with join to corez_donatur
+      const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+        SELECT COALESCE(SUM(corez_transaksi.transaksi), 0) as total
+        FROM corez_transaksi
+        INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
+        WHERE corez_transaksi.id_crm = ${idEmployee}
+          AND corez_transaksi.approved_transaksi = 'y'
+          AND corez_donatur.id_jenis IN (1, 5)
+          AND corez_transaksi.tgl_transaksi >= ${dateFilterStart}
+          AND corez_transaksi.tgl_transaksi <= ${dateFilterEnd}
+      `
+      capaian = Number(capaianResult[0]?.total) || 0
+      console.log('Timsil API - Verified capaian result:', capaianResult)
+    } else {
+      // Use corez_transaksi_scrap with join to corez_donatur
+      // Note: corez_transaksi_scrap may not have approved_transaksi = 'y' like corez_transaksi
+      const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+        SELECT COALESCE(SUM(corez_transaksi_scrap.transaksi), 0) as total
+        FROM corez_transaksi_scrap
+        INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
+        WHERE corez_transaksi_scrap.id_crm = ${idEmployee}
+          AND corez_donatur.id_jenis IN (1, 5)
+          AND corez_transaksi_scrap.tgl_transaksi >= ${dateFilterStart}
+          AND corez_transaksi_scrap.tgl_transaksi <= ${dateFilterEnd}
+      `
+      capaian = Number(capaianResult[0]?.total) || 0
+      console.log('Timsil API - Unverified capaian result:', capaianResult)
+    }
 
-    // 2. Jumlah kunjungan: count corez_kunjungan where id_karyawan = id_employee
-    const kunjunganCount = await prisma.corez_kunjungan.count({
-      where: {
-        id_karyawan: idEmployee,
-        ...kunjunganDateFilter,
-      },
-    })
+    console.log('Timsil API - Final capaian:', capaian)
+
+    // 2. Jumlah kunjungan: count corez_kunjungan joined with corez_donatur where id_jenis IN (1,5)
+    // Filter by corez_donatur.id_crm instead of corez_kunjungan.id_karyawan to match leaderboard logic
+    // Fix collation issue by converting id_donatur
+    const kunjunganResult = await prisma.$queryRaw<Array<{ count: number }>>`
+      SELECT COUNT(*) as count
+      FROM corez_kunjungan
+      INNER JOIN corez_donatur ON CONVERT(corez_kunjungan.id_donatur USING utf8mb4) COLLATE utf8mb4_unicode_ci = corez_donatur.id_donatur
+      WHERE corez_donatur.id_crm = ${idEmployee}
+        AND corez_donatur.id_jenis IN (1, 5)
+        AND corez_kunjungan.tgl_kunjungan >= ${dateFilterStart}
+        AND corez_kunjungan.tgl_kunjungan <= ${dateFilterEnd}
+    `
+    const kunjunganCount = Number(kunjunganResult[0]?.count) || 0
 
     // 3. Jumlah donatur kencleng: count corez_donatur where id_jenis = 5 and id_crm = id_employee
     const donaturKenclengCount = await prisma.corezDonatur.count({
@@ -105,23 +128,39 @@ export async function GET(request: Request) {
       },
     })
 
-    // 4. Jumlah sudah dijemput: count corez_kunjungan where sudah_dikunjungi = 'y' and id_karyawan = id_employee
-    const sudahDijemputCount = await prisma.corez_kunjungan.count({
-      where: {
-        id_karyawan: idEmployee,
-        sudah_dikunjungi: 'y',
-        ...kunjunganDateFilter,
-      },
-    })
+    // 4. Jumlah sudah dijemput: count corez_kunjungan joined with corez_donatur where id_jenis IN (1,5) and sudah_dikunjungi = 'y'
+    // Filter by corez_donatur.id_crm instead of corez_kunjungan.id_karyawan to match leaderboard logic
+    // Fix collation issue by converting id_donatur
+    const sudahDijemputResult = await prisma.$queryRaw<
+      Array<{ count: number }>
+    >`
+      SELECT COUNT(*) as count
+      FROM corez_kunjungan
+      INNER JOIN corez_donatur ON CONVERT(corez_kunjungan.id_donatur USING utf8mb4) COLLATE utf8mb4_unicode_ci = corez_donatur.id_donatur
+      WHERE corez_donatur.id_crm = ${idEmployee}
+        AND corez_donatur.id_jenis IN (1, 5)
+        AND corez_kunjungan.sudah_dikunjungi = 'y'
+        AND corez_kunjungan.tgl_kunjungan >= ${dateFilterStart}
+        AND corez_kunjungan.tgl_kunjungan <= ${dateFilterEnd}
+    `
+    const sudahDijemputCount = Number(sudahDijemputResult[0]?.count) || 0
 
-    // 5. Jumlah belum dijemput: count corez_kunjungan where sudah_dikunjungi = 'n' and id_karyawan = id_employee
-    const belumDijemputCount = await prisma.corez_kunjungan.count({
-      where: {
-        id_karyawan: idEmployee,
-        sudah_dikunjungi: 'n',
-        ...kunjunganDateFilter,
-      },
-    })
+    // 5. Jumlah belum dijemput: count corez_kunjungan joined with corez_donatur where id_jenis IN (1,5) and sudah_dikunjungi = 'n'
+    // Filter by corez_donatur.id_crm instead of corez_kunjungan.id_karyawan to match leaderboard logic
+    // Fix collation issue by converting id_donatur
+    const belumDijemputResult = await prisma.$queryRaw<
+      Array<{ count: number }>
+    >`
+      SELECT COUNT(*) as count
+      FROM corez_kunjungan
+      INNER JOIN corez_donatur ON CONVERT(corez_kunjungan.id_donatur USING utf8mb4) COLLATE utf8mb4_unicode_ci = corez_donatur.id_donatur
+      WHERE corez_donatur.id_crm = ${idEmployee}
+        AND corez_donatur.id_jenis IN (1, 5)
+        AND corez_kunjungan.sudah_dikunjungi = 'n'
+        AND corez_kunjungan.tgl_kunjungan >= ${dateFilterStart}
+        AND corez_kunjungan.tgl_kunjungan <= ${dateFilterEnd}
+    `
+    const belumDijemputCount = Number(belumDijemputResult[0]?.count) || 0
 
     return NextResponse.json({
       success: true,
