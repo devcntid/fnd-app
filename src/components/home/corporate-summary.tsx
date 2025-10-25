@@ -37,6 +37,9 @@ export function CorporateSummary() {
   }, [])
 
   useEffect(() => {
+    let isMounted = true
+    let timeoutId: NodeJS.Timeout
+
     const fetchData = async () => {
       try {
         setLoading(true)
@@ -45,20 +48,32 @@ export function CorporateSummary() {
         )
         const result = await response.json()
 
-        if (result.success) {
+        if (result.success && isMounted) {
           setData(result.data)
         }
       } catch (error) {
         console.error('Error fetching Corporate data:', error)
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
-    fetchData()
+    // Debounce the fetch to prevent rapid requests
+    timeoutId = setTimeout(() => {
+      fetchData()
+    }, 100)
+
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+    }
   }, [selectedYear, selectedMonth, selectedVerified])
 
   useEffect(() => {
+    let isMounted = true
+
     const fetchLeaderboard = async (page = 1, append = false) => {
       try {
         setLeaderboardLoading(true)
@@ -67,7 +82,7 @@ export function CorporateSummary() {
         )
         const result = await response.json()
 
-        if (result.success) {
+        if (result.success && isMounted) {
           if (append) {
             setLeaderboardData((prev) => [...prev, ...result.data])
           } else {
@@ -79,11 +94,17 @@ export function CorporateSummary() {
       } catch (error) {
         console.error('Error fetching Leaderboard data:', error)
       } finally {
-        setLeaderboardLoading(false)
+        if (isMounted) {
+          setLeaderboardLoading(false)
+        }
       }
     }
 
     fetchLeaderboard(1, false)
+
+    return () => {
+      isMounted = false
+    }
   }, [selectedYear, selectedMonth, selectedVerified])
 
   const loadMoreLeaderboard = async () => {
