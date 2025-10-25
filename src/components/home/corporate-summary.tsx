@@ -25,7 +25,8 @@ export function CorporateSummary() {
   // Initialize with default values to avoid hydration mismatch
   const [selectedYear, setSelectedYear] = useState<string>('2025')
   const [selectedMonth, setSelectedMonth] = useState<string>('1')
-  const [selectedVerified, setSelectedVerified] = useState<string>('unverified')
+  const [selectedVerified, setSelectedVerified] =
+    useState<string>('cash-unverified')
 
   // Set actual current year and month after mount to avoid hydration error
   useEffect(() => {
@@ -199,8 +200,9 @@ export function CorporateSummary() {
               onChange={(e) => setSelectedVerified(e.target.value)}
               className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
             >
-              <option value="unverified">Unverified</option>
               <option value="verified">Verified</option>
+              <option value="cash-unverified">Cash Unverified</option>
+              <option value="bank-unverified">Bank Unverified</option>
             </select>
           </div>
         </div>
@@ -284,8 +286,9 @@ export function CorporateSummary() {
               onChange={(e) => setSelectedVerified(e.target.value)}
               className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
             >
-              <option value="unverified">Unverified</option>
               <option value="verified">Verified</option>
+              <option value="cash-unverified">Cash Unverified</option>
+              <option value="bank-unverified">Bank Unverified</option>
             </select>
           </div>
         </div>

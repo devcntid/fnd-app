@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const tahun = searchParams.get('tahun')
     const bulan = searchParams.get('bulan')
-    const verified = searchParams.get('verified') || 'unverified'
+    const verified = searchParams.get('verified') || 'cash-unverified'
 
     // Validate tahun and bulan
     const currentYear = new Date().getFullYear()
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
           AND corez_transaksi.tgl_transaksi <= ${dateFilterEnd}
       `
       capaian = Number(capaianResult[0]?.total) || 0
-    } else {
+    } else if (verified === 'cash-unverified') {
       // Use corez_transaksi_scrap with join to corez_donatur
       const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
         SELECT COALESCE(SUM(corez_transaksi_scrap.transaksi), 0) as total
@@ -75,7 +75,20 @@ export async function GET(request: Request) {
           AND corez_transaksi_scrap.tgl_transaksi <= ${dateFilterEnd}
       `
       capaian = Number(capaianResult[0]?.total) || 0
-      console.log('Kalimat API - Unverified capaian:', capaian)
+      console.log('Kalimat API - Cash Unverified capaian:', capaian)
+    } else if (verified === 'bank-unverified') {
+      // Use corez_transaksi_claim with join to corez_donatur
+      const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+        SELECT COALESCE(SUM(corez_transaksi_claim.transaksi), 0) as total
+        FROM corez_transaksi_claim
+        INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
+        WHERE corez_transaksi_claim.id_crm = ${idEmployee}
+          AND corez_donatur.id_jenis = 4
+          AND corez_transaksi_claim.tgl_transaksi >= ${dateFilterStart}
+          AND corez_transaksi_claim.tgl_transaksi <= ${dateFilterEnd}
+      `
+      capaian = Number(capaianResult[0]?.total) || 0
+      console.log('Kalimat API - Bank Unverified capaian:', capaian)
     }
 
     // 2. Kotak Aktif: total count of donatur with id_jenis = 4 and id_crm = id_employee (all time)

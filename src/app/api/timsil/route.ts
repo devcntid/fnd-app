@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const tahun = searchParams.get('tahun')
     const bulan = searchParams.get('bulan')
-    const verified = searchParams.get('verified') || 'unverified'
+    const verified = searchParams.get('verified') || 'cash-unverified'
 
     console.log('Timsil API - idEmployee from cookie:', idEmployee)
     console.log(
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
       `
       capaian = Number(capaianResult[0]?.total) || 0
       console.log('Timsil API - Verified capaian result:', capaianResult)
-    } else {
+    } else if (verified === 'cash-unverified') {
       // Use corez_transaksi_scrap with join to corez_donatur
       // Note: corez_transaksi_scrap may not have approved_transaksi = 'y' like corez_transaksi
       const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
@@ -94,7 +94,20 @@ export async function GET(request: Request) {
           AND corez_transaksi_scrap.tgl_transaksi <= ${dateFilterEnd}
       `
       capaian = Number(capaianResult[0]?.total) || 0
-      console.log('Timsil API - Unverified capaian result:', capaianResult)
+      console.log('Timsil API - Cash Unverified capaian result:', capaianResult)
+    } else if (verified === 'bank-unverified') {
+      // Use corez_transaksi_claim with join to corez_donatur
+      const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+        SELECT COALESCE(SUM(corez_transaksi_claim.transaksi), 0) as total
+        FROM corez_transaksi_claim
+        INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
+        WHERE corez_transaksi_claim.id_crm = ${idEmployee}
+          AND corez_donatur.id_jenis IN (1, 5)
+          AND corez_transaksi_claim.tgl_transaksi >= ${dateFilterStart}
+          AND corez_transaksi_claim.tgl_transaksi <= ${dateFilterEnd}
+      `
+      capaian = Number(capaianResult[0]?.total) || 0
+      console.log('Timsil API - Bank Unverified capaian result:', capaianResult)
     }
 
     console.log('Timsil API - Final capaian:', capaian)
