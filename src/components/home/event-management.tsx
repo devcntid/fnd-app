@@ -72,34 +72,64 @@ export function EventManagement() {
   const [submitting, setSubmitting] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [currentUpcomingPage, setCurrentUpcomingPage] = useState(1)
+  const [hasMoreUpcoming, setHasMoreUpcoming] = useState(true)
 
   useEffect(() => {
     fetchEvents()
   }, [])
 
-  const fetchEvents = async (page = 1, append = false) => {
+  const fetchEvents = async (
+    upcomingPage = 1,
+    donePage = 1,
+    appendUpcoming = false,
+    appendDone = false
+  ) => {
     try {
-      // Fetch upcoming events (all)
-      const upcomingResponse = await fetch('/api/events?status=upcoming')
-      const upcomingResult = await upcomingResponse.json()
+      if (appendUpcoming) {
+        // Only fetch upcoming events when appending
+        const upcomingResponse = await fetch(
+          `/api/events?status=upcoming&page=${upcomingPage}&limit=2`
+        )
+        const upcomingResult = await upcomingResponse.json()
 
-      // Fetch completed events with pagination
-      const completedResponse = await fetch(
-        `/api/events?status=done&page=${page}&limit=3`
-      )
-      const completedResult = await completedResponse.json()
+        if (upcomingResult.success) {
+          setEvents((prev) => [...prev, ...upcomingResult.data])
+          setHasMoreUpcoming(upcomingResult.pagination?.hasMore || false)
+          setCurrentUpcomingPage(upcomingPage)
+        }
+      } else if (appendDone) {
+        // Only fetch completed events when appending
+        const completedResponse = await fetch(
+          `/api/events?status=done&page=${donePage}&limit=2`
+        )
+        const completedResult = await completedResponse.json()
 
-      if (upcomingResult.success && completedResult.success) {
-        if (append) {
-          // Only append completed events for pagination
+        if (completedResult.success) {
           setEvents((prev) => [...prev, ...completedResult.data])
-        } else {
-          // Combine upcoming and first page of completed events
+          setHasMore(completedResult.pagination?.hasMore || false)
+          setCurrentPage(donePage)
+        }
+      } else {
+        // Fetch both upcoming and completed events
+        const upcomingResponse = await fetch(
+          `/api/events?status=upcoming&page=${upcomingPage}&limit=2`
+        )
+        const upcomingResult = await upcomingResponse.json()
+
+        const completedResponse = await fetch(
+          `/api/events?status=done&page=${donePage}&limit=2`
+        )
+        const completedResult = await completedResponse.json()
+
+        if (upcomingResult.success && completedResult.success) {
           const allEvents = [...upcomingResult.data, ...completedResult.data]
           setEvents(allEvents)
+          setHasMoreUpcoming(upcomingResult.pagination?.hasMore || false)
+          setHasMore(completedResult.pagination?.hasMore || false)
+          setCurrentUpcomingPage(upcomingPage)
+          setCurrentPage(donePage)
         }
-        setHasMore(completedResult.pagination?.hasMore || false)
-        setCurrentPage(page)
       }
     } catch (error) {
       console.error('Error fetching events:', error)
@@ -109,10 +139,17 @@ export function EventManagement() {
     }
   }
 
+  const loadMoreUpcoming = () => {
+    if (!loadingMore && hasMoreUpcoming) {
+      setLoadingMore(true)
+      fetchEvents(currentUpcomingPage + 1, currentPage, true, false)
+    }
+  }
+
   const loadMore = () => {
     if (!loadingMore && hasMore) {
       setLoadingMore(true)
-      fetchEvents(currentPage + 1, true)
+      fetchEvents(currentUpcomingPage, currentPage + 1, false, true)
     }
   }
 
@@ -239,7 +276,7 @@ export function EventManagement() {
       const result = await response.json()
       if (result.success) {
         // Refresh events list
-        fetchEvents(1, false)
+        fetchEvents(1, 1, false, false)
         setShowAddForm(false)
         setAddFormData({
           nama: '',
@@ -285,7 +322,7 @@ export function EventManagement() {
       const result = await response.json()
       if (result.success) {
         // Refresh events list
-        fetchEvents(1, false)
+        fetchEvents(1, 1, false, false)
         setShowEditForm(false)
         setEventToEdit(null)
       }
@@ -308,7 +345,7 @@ export function EventManagement() {
       const result = await response.json()
       if (result.success) {
         // Refresh events list
-        fetchEvents(1, false)
+        fetchEvents(1, 1, false, false)
         setShowDeleteConfirm(false)
         setEventToDelete(null)
       }
@@ -341,7 +378,7 @@ export function EventManagement() {
       const result = await response.json()
       if (result.success) {
         // Refresh events list
-        fetchEvents(1, false)
+        fetchEvents(1, 1, false, false)
         setShowRealisasiForm(false)
         setEventToRealisasi(null)
       }
@@ -404,6 +441,26 @@ export function EventManagement() {
               />
             ))}
           </div>
+
+          {/* Load More Button untuk events akan datang */}
+          {hasMoreUpcoming && (
+            <div className="text-center mt-6">
+              <button
+                onClick={loadMoreUpcoming}
+                disabled={loadingMore}
+                className="bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 text-gray-700 px-6 py-3 rounded-xl font-medium transition-colors shadow-sm border border-gray-200"
+              >
+                {loadingMore ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                    Memuat...
+                  </div>
+                ) : (
+                  'Muat Lebih Banyak'
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

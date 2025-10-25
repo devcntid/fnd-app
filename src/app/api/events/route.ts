@@ -10,24 +10,26 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit
 
     const now = new Date()
-    
+
     // Build where clause based on status filter
     let whereClause = {}
     if (status === 'upcoming') {
       whereClause = {
         tgl_event: {
-          gte: now
-        }
+          gte: now,
+        },
       }
     } else if (status === 'done') {
       whereClause = {
         tgl_event: {
-          lt: now
-        }
+          lt: now,
+        },
       }
     }
 
     const totalCount = await prisma.corez_event.count({ where: whereClause })
+
+    // Both upcoming and done events use pagination
     const events = await prisma.corez_event.findMany({
       where: whereClause,
       orderBy: [{ tgl_event: 'desc' }, { id: 'desc' }],
@@ -36,18 +38,19 @@ export async function GET(request: NextRequest) {
     })
 
     const mapped = events.map((e) => {
-      const eventStatus = e.tgl_event && e.tgl_event >= now ? 'upcoming' : 'done'
-      return { 
-        ...e, 
+      const eventStatus =
+        e.tgl_event && e.tgl_event >= now ? 'upcoming' : 'done'
+      return {
+        ...e,
         status: eventStatus,
-        nominal_donasi: e.nominal_donasi ? Number(e.nominal_donasi) : 0
+        nominal_donasi: e.nominal_donasi ? Number(e.nominal_donasi) : 0,
       }
     })
 
     const hasMore = offset + limit < totalCount
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: mapped,
       pagination: {
         page,
@@ -55,7 +58,7 @@ export async function GET(request: NextRequest) {
         total: totalCount,
         hasMore,
         totalPages: Math.ceil(totalCount / limit),
-      }
+      },
     })
   } catch (error) {
     console.error('Error fetching events:', error)
@@ -69,15 +72,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { 
-      nama, 
-      tgl_event, 
-      target_peserta, 
-      lokasi, 
-      kota, 
-      jenis_event, 
-      file_proposal, 
-      flyer 
+    const {
+      nama,
+      tgl_event,
+      target_peserta,
+      lokasi,
+      kota,
+      jenis_event,
+      file_proposal,
+      flyer,
     } = body
 
     const event = await prisma.corez_event.create({
@@ -99,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     const serializedEvent = {
       ...event,
-      nominal_donasi: event.nominal_donasi ? Number(event.nominal_donasi) : 0
+      nominal_donasi: event.nominal_donasi ? Number(event.nominal_donasi) : 0,
     }
 
     return NextResponse.json({ success: true, data: serializedEvent })
@@ -111,5 +114,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
-
