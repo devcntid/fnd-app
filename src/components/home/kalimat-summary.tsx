@@ -23,9 +23,16 @@ export function KalimatSummary() {
   const [hasMoreLeaderboard, setHasMoreLeaderboard] = useState(true)
 
   // Initialize with default values to avoid hydration mismatch
+  // Summary dropdowns
   const [selectedYear, setSelectedYear] = useState<string>('2025')
   const [selectedMonth, setSelectedMonth] = useState<string>('1')
   const [selectedVerified, setSelectedVerified] =
+    useState<string>('cash-unverified')
+
+  // Leaderboard dropdowns (separate from summary)
+  const [leaderboardYear, setLeaderboardYear] = useState<string>('2025')
+  const [leaderboardMonth, setLeaderboardMonth] = useState<string>('1')
+  const [leaderboardVerified, setLeaderboardVerified] =
     useState<string>('cash-unverified')
 
   // Set actual current year and month after mount to avoid hydration error
@@ -34,6 +41,8 @@ export function KalimatSummary() {
     const currentMonth = new Date().getMonth() + 1
     setSelectedYear(currentYear.toString())
     setSelectedMonth(currentMonth.toString())
+    setLeaderboardYear(currentYear.toString())
+    setLeaderboardMonth(currentMonth.toString())
   }, [])
 
   useEffect(() => {
@@ -77,7 +86,7 @@ export function KalimatSummary() {
       try {
         setLeaderboardLoading(true)
         const response = await fetch(
-          `/api/kalimat/leaderboard?tahun=${selectedYear}&bulan=${selectedMonth}&verified=${selectedVerified}&page=${page}&limit=5`
+          `/api/kalimat/leaderboard?tahun=${leaderboardYear}&bulan=${leaderboardMonth}&verified=${leaderboardVerified}&page=${page}&limit=5`
         )
         const result = await response.json()
 
@@ -104,14 +113,14 @@ export function KalimatSummary() {
     return () => {
       isMounted = false
     }
-  }, [selectedYear, selectedMonth, selectedVerified])
+  }, [leaderboardYear, leaderboardMonth, leaderboardVerified])
 
   const loadMoreLeaderboard = async () => {
     if (!leaderboardLoading && hasMoreLeaderboard) {
       try {
         setLeaderboardLoading(true)
         const response = await fetch(
-          `/api/kalimat/leaderboard?tahun=${selectedYear}&bulan=${selectedMonth}&verified=${selectedVerified}&page=${
+          `/api/kalimat/leaderboard?tahun=${leaderboardYear}&bulan=${leaderboardMonth}&verified=${leaderboardVerified}&page=${
             leaderboardPage + 1
           }&limit=5`
         )
@@ -271,8 +280,8 @@ export function KalimatSummary() {
             {/* Tahun dropdown untuk leaderboard */}
             <select
               title="Pilih Tahun untuk Leaderboard"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
+              value={leaderboardYear}
+              onChange={(e) => setLeaderboardYear(e.target.value)}
               className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-20"
             >
               <option value="all">Semua Tahun</option>
@@ -286,8 +295,8 @@ export function KalimatSummary() {
             {/* Bulan dropdown untuk leaderboard */}
             <select
               title="Pilih Bulan untuk Leaderboard"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
+              value={leaderboardMonth}
+              onChange={(e) => setLeaderboardMonth(e.target.value)}
               className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
             >
               {monthOptions.map((month) => (
@@ -300,8 +309,8 @@ export function KalimatSummary() {
             {/* Verified dropdown untuk leaderboard */}
             <select
               title="Pilih Status Verified untuk Leaderboard"
-              value={selectedVerified}
-              onChange={(e) => setSelectedVerified(e.target.value)}
+              value={leaderboardVerified}
+              onChange={(e) => setLeaderboardVerified(e.target.value)}
               className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
             >
               <option value="verified">Verified</option>

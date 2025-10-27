@@ -54,8 +54,8 @@ export async function GET(request: Request) {
     const filterMonth =
       bulan && bulan !== 'all' ? parseInt(bulan) : currentMonth
 
-    // Check if selected year is current year
-    const isCurrentYear = filterYear === currentYear
+    // Check if selected year is current year (not when tahun is 'all')
+    const isCurrentYear = tahun && tahun !== 'all' && filterYear === currentYear
 
     // Build date filter
     const startDate = new Date(filterYear, filterMonth - 1, 1)
@@ -96,8 +96,15 @@ export async function GET(request: Request) {
           capaianResult
         )
       } else {
-        // Use corez_transaksi with YEAR filter for past years
+        // Use corez_transaksi
+        let yearFilter = Prisma.empty
         let monthFilter = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          // Only add YEAR filter if specific year is selected
+          yearFilter = Prisma.sql`AND YEAR(corez_transaksi.tgl_transaksi) = ${filterYear}`
+        }
+
         if (bulan && bulan !== 'all') {
           monthFilter = Prisma.sql`AND MONTH(corez_transaksi.tgl_transaksi) = ${parseInt(
             bulan
@@ -111,7 +118,7 @@ export async function GET(request: Request) {
           WHERE corez_transaksi.id_crm = ${idEmployee}
             AND corez_transaksi.approved_transaksi = 'y'
             AND corez_donatur.id_jenis IN (1, 5)
-            AND YEAR(corez_transaksi.tgl_transaksi) = ${filterYear}
+            ${yearFilter}
             ${monthFilter}
         `
         capaian = Number(capaianResult[0]?.total) || 0
@@ -144,8 +151,14 @@ export async function GET(request: Request) {
           capaianResult
         )
       } else {
-        // Use corez_transaksi_scrap with YEAR filter for past years
+        // Use corez_transaksi_scrap
+        let yearFilter = Prisma.empty
         let monthFilter = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          yearFilter = Prisma.sql`AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}`
+        }
+
         if (bulan && bulan !== 'all') {
           monthFilter = Prisma.sql`AND MONTH(corez_transaksi_scrap.tgl_transaksi) = ${parseInt(
             bulan
@@ -158,7 +171,7 @@ export async function GET(request: Request) {
           INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_scrap.id_crm = ${idEmployee}
             AND corez_donatur.id_jenis IN (1, 5)
-            AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}
+            ${yearFilter}
             ${monthFilter}
         `
         capaian = Number(capaianResult[0]?.total) || 0
@@ -191,8 +204,14 @@ export async function GET(request: Request) {
           capaianResult
         )
       } else {
-        // Use corez_transaksi_claim with YEAR filter for past years
+        // Use corez_transaksi_claim
+        let yearFilter = Prisma.empty
         let monthFilter = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          yearFilter = Prisma.sql`AND YEAR(corez_transaksi_claim.tgl_transaksi) = ${filterYear}`
+        }
+
         if (bulan && bulan !== 'all') {
           monthFilter = Prisma.sql`AND MONTH(corez_transaksi_claim.tgl_transaksi) = ${parseInt(
             bulan
@@ -205,7 +224,7 @@ export async function GET(request: Request) {
           INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_claim.id_crm = ${idEmployee}
             AND corez_donatur.id_jenis IN (1, 5)
-            AND YEAR(corez_transaksi_claim.tgl_transaksi) = ${filterYear}
+            ${yearFilter}
             ${monthFilter}
         `
         capaian = Number(capaianResult[0]?.total) || 0

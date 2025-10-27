@@ -28,21 +28,16 @@ export async function GET(request: Request) {
     const currentMonth = new Date().getMonth() + 1
 
     const filterYear = tahun && tahun !== 'all' ? parseInt(tahun) : currentYear
-    const filterMonth =
-      bulan && bulan !== 'all' ? parseInt(bulan) : currentMonth
+    // const filterMonth = bulan && bulan !== 'all' ? parseInt(bulan) : currentMonth
 
-    // Check if selected year is current year
-    const isCurrentYear = filterYear === currentYear
+    // Check if selected year is current year (not when tahun is 'all')
+    const isCurrentYear = tahun && tahun !== 'all' && filterYear === currentYear
 
-    // Build date filter
-    const startDate = new Date(filterYear, filterMonth - 1, 1)
-    const endDate = new Date(filterYear, filterMonth, 0, 23, 59, 59)
-
-    // If month is "all", filter by year only
-    const startDateFilter =
-      bulan === 'all' ? new Date(filterYear, 0, 1) : startDate
-    const endDateFilter =
-      bulan === 'all' ? new Date(filterYear, 11, 31, 23, 59, 59) : endDate
+    // Build date filter (no longer used since we switched to YEAR/MONTH filter)
+    // const startDate = new Date(filterYear, filterMonth - 1, 1)
+    // const endDate = new Date(filterYear, filterMonth, 0, 23, 59, 59)
+    // const startDateFilter = bulan === 'all' ? new Date(filterYear, 0, 1) : startDate
+    // const endDateFilter = bulan === 'all' ? new Date(filterYear, 11, 31, 23, 59, 59) : endDate
 
     // Get leaderboard data using raw query since we need to join
     interface LeaderboardRow {
@@ -106,8 +101,14 @@ export async function GET(request: Request) {
           ) as subquery
         `
       } else {
-        // Use corez_transaksi with YEAR filter for past years
+        // Use corez_transaksi
+        let yearCondition = Prisma.empty
         let monthCondition = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          yearCondition = Prisma.sql`AND YEAR(corez_transaksi.tgl_transaksi) = ${filterYear}`
+        }
+
         if (bulan && bulan !== 'all') {
           monthCondition = Prisma.sql`AND MONTH(corez_transaksi.tgl_transaksi) = ${parseInt(
             bulan
@@ -125,7 +126,7 @@ export async function GET(request: Request) {
               AND corez_donatur.id_jenis IN (1, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi.id_crm
             AND corez_transaksi.approved_transaksi = 'y'
-            AND YEAR(corez_transaksi.tgl_transaksi) = ${filterYear}
+            ${yearCondition}
             ${monthCondition}
           WHERE hcm_karyawan.aktif = 'y'
           GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
@@ -151,7 +152,7 @@ export async function GET(request: Request) {
                 AND corez_donatur.id_jenis IN (1, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi.id_crm
               AND corez_transaksi.approved_transaksi = 'y'
-              AND YEAR(corez_transaksi.tgl_transaksi) = ${filterYear}
+              ${yearCondition}
               ${monthCondition}
             WHERE hcm_karyawan.aktif = 'y'
             GROUP BY hcm_karyawan.id_karyawan
@@ -209,8 +210,14 @@ export async function GET(request: Request) {
         ) as subquery
       `
       } else {
-        // Use corez_transaksi_scrap with YEAR filter for past years
+        // Use corez_transaksi_scrap
+        let yearCondition = Prisma.empty
         let monthCondition = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          yearCondition = Prisma.sql`AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}`
+        }
+
         if (bulan && bulan !== 'all') {
           monthCondition = Prisma.sql`AND MONTH(corez_transaksi_scrap.tgl_transaksi) = ${parseInt(
             bulan
@@ -227,7 +234,7 @@ export async function GET(request: Request) {
             INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
               AND corez_donatur.id_jenis IN (1, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap.id_crm
-            AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}
+            ${yearCondition}
             ${monthCondition}
           WHERE hcm_karyawan.aktif = 'y'
           GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
@@ -252,7 +259,7 @@ export async function GET(request: Request) {
               INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
                 AND corez_donatur.id_jenis IN (1, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap.id_crm
-              AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}
+              ${yearCondition}
               ${monthCondition}
             WHERE hcm_karyawan.aktif = 'y'
             GROUP BY hcm_karyawan.id_karyawan
@@ -310,8 +317,14 @@ export async function GET(request: Request) {
           ) as subquery
         `
       } else {
-        // Use corez_transaksi_claim with YEAR filter for past years
+        // Use corez_transaksi_claim
+        let yearCondition = Prisma.empty
         let monthCondition = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          yearCondition = Prisma.sql`AND YEAR(corez_transaksi_claim.tgl_transaksi) = ${filterYear}`
+        }
+
         if (bulan && bulan !== 'all') {
           monthCondition = Prisma.sql`AND MONTH(corez_transaksi_claim.tgl_transaksi) = ${parseInt(
             bulan
@@ -328,7 +341,7 @@ export async function GET(request: Request) {
             INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
               AND corez_donatur.id_jenis IN (1, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim.id_crm
-            AND YEAR(corez_transaksi_claim.tgl_transaksi) = ${filterYear}
+            ${yearCondition}
             ${monthCondition}
           WHERE hcm_karyawan.aktif = 'y'
           GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
@@ -353,7 +366,7 @@ export async function GET(request: Request) {
               INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
                 AND corez_donatur.id_jenis IN (1, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim.id_crm
-              AND YEAR(corez_transaksi_claim.tgl_transaksi) = ${filterYear}
+              ${yearCondition}
               ${monthCondition}
             WHERE hcm_karyawan.aktif = 'y'
             GROUP BY hcm_karyawan.id_karyawan
