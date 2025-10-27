@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 const SESSION_COOKIE = 'fnd_session'
 
@@ -30,6 +31,9 @@ export async function GET(request: Request) {
     const filterMonth =
       bulan && bulan !== 'all' ? parseInt(bulan) : currentMonth
 
+    // Check if selected year is current year
+    const isCurrentYear = filterYear === currentYear
+
     // Build date filter
     const startDate = new Date(filterYear, filterMonth - 1, 1)
     const endDate = new Date(filterYear, filterMonth, 0, 23, 59, 59)
@@ -50,37 +54,70 @@ export async function GET(request: Request) {
     let totalCount: Array<{ total: number }> = []
 
     if (verified === 'verified') {
-      // Use corez_transaksi with INNER JOIN to corez_donatur to match ringkasan filter
-      leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
-        SELECT 
-          hcm_karyawan.karyawan as nama,
-          COALESCE(SUM(corez_transaksi.transaksi), 0) as capaian
-        FROM hcm_karyawan
-        LEFT JOIN (
-          corez_transaksi
-          INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
-            AND corez_donatur.id_jenis IN (1, 5)
-        ) ON hcm_karyawan.id_karyawan = corez_transaksi.id_crm
-          AND corez_transaksi.approved_transaksi = 'y'
-          AND corez_transaksi.tgl_transaksi >= ${startDateFilter}
-          AND corez_transaksi.tgl_transaksi <= ${endDateFilter}
-        WHERE hcm_karyawan.aktif = 'y'
-        GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
-        HAVING capaian > 0
-        ORDER BY capaian DESC
-        LIMIT ${limit}
-        OFFSET ${(page - 1) * limit}
-      `
+      if (isCurrentYear) {
+        // Use corez_transaksi_thisyear for current year
+        let monthCondition = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthCondition = Prisma.sql`AND MONTH(corez_transaksi_thisyear.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
 
-      // Get total count
-      interface CountRow {
-        total: number
-      }
+        leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
+          SELECT 
+            hcm_karyawan.karyawan as nama,
+            COALESCE(SUM(corez_transaksi_thisyear.transaksi), 0) as capaian
+          FROM hcm_karyawan
+          LEFT JOIN (
+            corez_transaksi_thisyear
+            INNER JOIN corez_donatur ON corez_transaksi_thisyear.id_donatur = corez_donatur.id_donatur
+              AND corez_donatur.id_jenis IN (1, 5)
+          ) ON hcm_karyawan.id_karyawan = corez_transaksi_thisyear.id_crm
+            AND corez_transaksi_thisyear.approved_transaksi = 'y'
+            ${monthCondition}
+          WHERE hcm_karyawan.aktif = 'y'
+          GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
+          HAVING capaian > 0
+          ORDER BY capaian DESC
+          LIMIT ${limit}
+          OFFSET ${(page - 1) * limit}
+        `
 
-      totalCount = await prisma.$queryRaw<CountRow[]>`
-        SELECT COUNT(*) as total
-        FROM (
-          SELECT hcm_karyawan.id_karyawan
+        // Get total count
+        interface CountRow {
+          total: number
+        }
+
+        totalCount = await prisma.$queryRaw<CountRow[]>`
+          SELECT COUNT(*) as total
+          FROM (
+            SELECT hcm_karyawan.id_karyawan
+            FROM hcm_karyawan
+            LEFT JOIN (
+              corez_transaksi_thisyear
+              INNER JOIN corez_donatur ON corez_transaksi_thisyear.id_donatur = corez_donatur.id_donatur
+                AND corez_donatur.id_jenis IN (1, 5)
+            ) ON hcm_karyawan.id_karyawan = corez_transaksi_thisyear.id_crm
+              AND corez_transaksi_thisyear.approved_transaksi = 'y'
+              ${monthCondition}
+            WHERE hcm_karyawan.aktif = 'y'
+            GROUP BY hcm_karyawan.id_karyawan
+            HAVING COALESCE(SUM(corez_transaksi_thisyear.transaksi), 0) > 0
+          ) as subquery
+        `
+      } else {
+        // Use corez_transaksi with YEAR filter for past years
+        let monthCondition = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthCondition = Prisma.sql`AND MONTH(corez_transaksi.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
+          SELECT 
+            hcm_karyawan.karyawan as nama,
+            COALESCE(SUM(corez_transaksi.transaksi), 0) as capaian
           FROM hcm_karyawan
           LEFT JOIN (
             corez_transaksi
@@ -88,28 +125,60 @@ export async function GET(request: Request) {
               AND corez_donatur.id_jenis IN (1, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi.id_crm
             AND corez_transaksi.approved_transaksi = 'y'
-            AND corez_transaksi.tgl_transaksi >= ${startDateFilter}
-            AND corez_transaksi.tgl_transaksi <= ${endDateFilter}
+            AND YEAR(corez_transaksi.tgl_transaksi) = ${filterYear}
+            ${monthCondition}
           WHERE hcm_karyawan.aktif = 'y'
-          GROUP BY hcm_karyawan.id_karyawan
-          HAVING COALESCE(SUM(corez_transaksi.transaksi), 0) > 0
-        ) as subquery
-      `
+          GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
+          HAVING capaian > 0
+          ORDER BY capaian DESC
+          LIMIT ${limit}
+          OFFSET ${(page - 1) * limit}
+        `
+
+        // Get total count
+        interface CountRow {
+          total: number
+        }
+
+        totalCount = await prisma.$queryRaw<CountRow[]>`
+          SELECT COUNT(*) as total
+          FROM (
+            SELECT hcm_karyawan.id_karyawan
+            FROM hcm_karyawan
+            LEFT JOIN (
+              corez_transaksi
+              INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
+                AND corez_donatur.id_jenis IN (1, 5)
+            ) ON hcm_karyawan.id_karyawan = corez_transaksi.id_crm
+              AND corez_transaksi.approved_transaksi = 'y'
+              AND YEAR(corez_transaksi.tgl_transaksi) = ${filterYear}
+              ${monthCondition}
+            WHERE hcm_karyawan.aktif = 'y'
+            GROUP BY hcm_karyawan.id_karyawan
+            HAVING COALESCE(SUM(corez_transaksi.transaksi), 0) > 0
+          ) as subquery
+        `
+      }
     } else if (verified === 'cash-unverified') {
-      // Use corez_transaksi_scrap with INNER JOIN to corez_donatur to match ringkasan filter
-      // Note: corez_transaksi_scrap may not have approved_transaksi = 'y' like corez_transaksi
-      leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
-        SELECT 
-          hcm_karyawan.karyawan as nama,
-          COALESCE(SUM(corez_transaksi_scrap.transaksi), 0) as capaian
-        FROM hcm_karyawan
-        LEFT JOIN (
-          corez_transaksi_scrap
-          INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
-            AND corez_donatur.id_jenis IN (1, 5)
-        ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap.id_crm
-          AND corez_transaksi_scrap.tgl_transaksi >= ${startDateFilter}
-          AND corez_transaksi_scrap.tgl_transaksi <= ${endDateFilter}
+      if (isCurrentYear) {
+        // Use corez_transaksi_scrap_thisyear for current year
+        let monthCondition = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthCondition = Prisma.sql`AND MONTH(corez_transaksi_scrap_thisyear.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+        leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
+          SELECT 
+            hcm_karyawan.karyawan as nama,
+            COALESCE(SUM(corez_transaksi_scrap_thisyear.transaksi), 0) as capaian
+          FROM hcm_karyawan
+          LEFT JOIN (
+            corez_transaksi_scrap_thisyear
+            INNER JOIN corez_donatur ON corez_transaksi_scrap_thisyear.id_donatur = corez_donatur.id_donatur
+              AND corez_donatur.id_jenis IN (1, 5)
+          ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap_thisyear.id_crm
+            ${monthCondition}
         WHERE hcm_karyawan.aktif = 'y'
         GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
         HAVING capaian > 0
@@ -118,42 +187,99 @@ export async function GET(request: Request) {
         OFFSET ${(page - 1) * limit}
       `
 
-      // Get total count
-      interface CountRow {
-        total: number
-      }
+        // Get total count
+        interface CountRow {
+          total: number
+        }
 
-      totalCount = await prisma.$queryRaw<CountRow[]>`
-        SELECT COUNT(*) as total
-        FROM (
-          SELECT hcm_karyawan.id_karyawan
+        totalCount = await prisma.$queryRaw<CountRow[]>`
+          SELECT COUNT(*) as total
+          FROM (
+            SELECT hcm_karyawan.id_karyawan
+            FROM hcm_karyawan
+            LEFT JOIN (
+              corez_transaksi_scrap_thisyear
+              INNER JOIN corez_donatur ON corez_transaksi_scrap_thisyear.id_donatur = corez_donatur.id_donatur
+                AND corez_donatur.id_jenis IN (1, 5)
+            ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap_thisyear.id_crm
+              ${monthCondition}
+          WHERE hcm_karyawan.aktif = 'y'
+          GROUP BY hcm_karyawan.id_karyawan
+          HAVING COALESCE(SUM(corez_transaksi_scrap_thisyear.transaksi), 0) > 0
+        ) as subquery
+      `
+      } else {
+        // Use corez_transaksi_scrap with YEAR filter for past years
+        let monthCondition = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthCondition = Prisma.sql`AND MONTH(corez_transaksi_scrap.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
+          SELECT 
+            hcm_karyawan.karyawan as nama,
+            COALESCE(SUM(corez_transaksi_scrap.transaksi), 0) as capaian
           FROM hcm_karyawan
           LEFT JOIN (
             corez_transaksi_scrap
             INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
               AND corez_donatur.id_jenis IN (1, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap.id_crm
-            AND corez_transaksi_scrap.tgl_transaksi >= ${startDateFilter}
-            AND corez_transaksi_scrap.tgl_transaksi <= ${endDateFilter}
+            AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}
+            ${monthCondition}
           WHERE hcm_karyawan.aktif = 'y'
-          GROUP BY hcm_karyawan.id_karyawan
-          HAVING COALESCE(SUM(corez_transaksi_scrap.transaksi), 0) > 0
-        ) as subquery
-      `
+          GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
+          HAVING capaian > 0
+          ORDER BY capaian DESC
+          LIMIT ${limit}
+          OFFSET ${(page - 1) * limit}
+        `
+
+        // Get total count
+        interface CountRow {
+          total: number
+        }
+
+        totalCount = await prisma.$queryRaw<CountRow[]>`
+          SELECT COUNT(*) as total
+          FROM (
+            SELECT hcm_karyawan.id_karyawan
+            FROM hcm_karyawan
+            LEFT JOIN (
+              corez_transaksi_scrap
+              INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
+                AND corez_donatur.id_jenis IN (1, 5)
+            ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap.id_crm
+              AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}
+              ${monthCondition}
+            WHERE hcm_karyawan.aktif = 'y'
+            GROUP BY hcm_karyawan.id_karyawan
+            HAVING COALESCE(SUM(corez_transaksi_scrap.transaksi), 0) > 0
+          ) as subquery
+        `
+      }
     } else if (verified === 'bank-unverified') {
-      // Use corez_transaksi_claim with INNER JOIN to corez_donatur to match ringkasan filter
-      leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
-        SELECT 
-          hcm_karyawan.karyawan as nama,
-          COALESCE(SUM(corez_transaksi_claim.transaksi), 0) as capaian
-        FROM hcm_karyawan
-        LEFT JOIN (
-          corez_transaksi_claim
-          INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
-            AND corez_donatur.id_jenis IN (1, 5)
-        ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim.id_crm
-          AND corez_transaksi_claim.tgl_transaksi >= ${startDateFilter}
-          AND corez_transaksi_claim.tgl_transaksi <= ${endDateFilter}
+      if (isCurrentYear) {
+        // Use corez_transaksi_claim_thisyear for current year
+        let monthCondition = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthCondition = Prisma.sql`AND MONTH(corez_transaksi_claim_thisyear.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+        leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
+          SELECT 
+            hcm_karyawan.karyawan as nama,
+            COALESCE(SUM(corez_transaksi_claim_thisyear.transaksi), 0) as capaian
+          FROM hcm_karyawan
+          LEFT JOIN (
+            corez_transaksi_claim_thisyear
+            INNER JOIN corez_donatur ON corez_transaksi_claim_thisyear.id_donatur = corez_donatur.id_donatur
+              AND corez_donatur.id_jenis IN (1, 5)
+          ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim_thisyear.id_crm
+            ${monthCondition}
         WHERE hcm_karyawan.aktif = 'y'
         GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
         HAVING capaian > 0
@@ -162,28 +288,79 @@ export async function GET(request: Request) {
         OFFSET ${(page - 1) * limit}
       `
 
-      // Get total count
-      interface CountRow {
-        total: number
-      }
+        // Get total count
+        interface CountRow {
+          total: number
+        }
 
-      totalCount = await prisma.$queryRaw<CountRow[]>`
-        SELECT COUNT(*) as total
-        FROM (
-          SELECT hcm_karyawan.id_karyawan
+        totalCount = await prisma.$queryRaw<CountRow[]>`
+          SELECT COUNT(*) as total
+          FROM (
+            SELECT hcm_karyawan.id_karyawan
+            FROM hcm_karyawan
+            LEFT JOIN (
+              corez_transaksi_claim_thisyear
+              INNER JOIN corez_donatur ON corez_transaksi_claim_thisyear.id_donatur = corez_donatur.id_donatur
+                AND corez_donatur.id_jenis IN (1, 5)
+            ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim_thisyear.id_crm
+              ${monthCondition}
+            WHERE hcm_karyawan.aktif = 'y'
+            GROUP BY hcm_karyawan.id_karyawan
+            HAVING COALESCE(SUM(corez_transaksi_claim_thisyear.transaksi), 0) > 0
+          ) as subquery
+        `
+      } else {
+        // Use corez_transaksi_claim with YEAR filter for past years
+        let monthCondition = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthCondition = Prisma.sql`AND MONTH(corez_transaksi_claim.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        leaderboardData = await prisma.$queryRaw<LeaderboardRow[]>`
+          SELECT 
+            hcm_karyawan.karyawan as nama,
+            COALESCE(SUM(corez_transaksi_claim.transaksi), 0) as capaian
           FROM hcm_karyawan
           LEFT JOIN (
             corez_transaksi_claim
             INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
               AND corez_donatur.id_jenis IN (1, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim.id_crm
-            AND corez_transaksi_claim.tgl_transaksi >= ${startDateFilter}
-            AND corez_transaksi_claim.tgl_transaksi <= ${endDateFilter}
+            AND YEAR(corez_transaksi_claim.tgl_transaksi) = ${filterYear}
+            ${monthCondition}
           WHERE hcm_karyawan.aktif = 'y'
-          GROUP BY hcm_karyawan.id_karyawan
-          HAVING COALESCE(SUM(corez_transaksi_claim.transaksi), 0) > 0
-        ) as subquery
-      `
+          GROUP BY hcm_karyawan.id_karyawan, hcm_karyawan.karyawan
+          HAVING capaian > 0
+          ORDER BY capaian DESC
+          LIMIT ${limit}
+          OFFSET ${(page - 1) * limit}
+        `
+
+        // Get total count
+        interface CountRow {
+          total: number
+        }
+
+        totalCount = await prisma.$queryRaw<CountRow[]>`
+          SELECT COUNT(*) as total
+          FROM (
+            SELECT hcm_karyawan.id_karyawan
+            FROM hcm_karyawan
+            LEFT JOIN (
+              corez_transaksi_claim
+              INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
+                AND corez_donatur.id_jenis IN (1, 5)
+            ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim.id_crm
+              AND YEAR(corez_transaksi_claim.tgl_transaksi) = ${filterYear}
+              ${monthCondition}
+            WHERE hcm_karyawan.aktif = 'y'
+            GROUP BY hcm_karyawan.id_karyawan
+            HAVING COALESCE(SUM(corez_transaksi_claim.transaksi), 0) > 0
+          ) as subquery
+        `
+      }
     }
 
     const total = Number(totalCount[0]?.total) || 0
