@@ -25,10 +25,8 @@ export async function GET(request: Request) {
 
     // Validate tahun and bulan
     const currentYear = new Date().getFullYear()
-    const currentMonth = new Date().getMonth() + 1
 
     const filterYear = tahun && tahun !== 'all' ? parseInt(tahun) : currentYear
-    // const filterMonth = bulan && bulan !== 'all' ? parseInt(bulan) : currentMonth
 
     // Check if selected year is current year (not when tahun is 'all')
     const isCurrentYear = tahun && tahun !== 'all' && filterYear === currentYear
