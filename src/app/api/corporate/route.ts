@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 const SESSION_COOKIE = 'fnd_session'
 
@@ -30,64 +31,154 @@ export async function GET(request: Request) {
 
     // Validate tahun and bulan
     const currentYear = new Date().getFullYear()
-    const currentMonth = new Date().getMonth() + 1
 
     const filterYear = tahun && tahun !== 'all' ? parseInt(tahun) : currentYear
-    const filterMonth =
-      bulan && bulan !== 'all' ? parseInt(bulan) : currentMonth
 
-    // Build date filter
-    const startDate = new Date(filterYear, filterMonth - 1, 1)
-    const endDate = new Date(filterYear, filterMonth, 0, 23, 59, 59)
+    // Check if selected year is current year (not when tahun is 'all')
+    const isCurrentYear = tahun && tahun !== 'all' && filterYear === currentYear
 
-    // If month is "all", filter by year only
-    const dateFilterStart =
-      bulan === 'all' ? new Date(filterYear, 0, 1) : startDate
-    const dateFilterEnd =
-      bulan === 'all' ? new Date(filterYear, 11, 31, 23, 59, 59) : endDate
-
-    // 1. Capaian Corporate: sum from corez_transaksi (verified) or corez_transaksi_scrap (unverified)
+    // 1. Capaian Corporate: sum from corez_transaksi (verified)_options or corez_transaksi_scrap (unverified)
     // where id_crm = id_employee and id_jenis = 3
     let capaian = 0
 
     if (verified === 'verified') {
-      // Use corez_transaksi with join to corez_donatur
-      const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
-        SELECT COALESCE(SUM(corez_transaksi.transaksi), 0) as total
-        FROM corez_transaksi
-        INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
-        WHERE corez_transaksi.id_crm = ${idEmployee}
-          AND corez_transaksi.approved_transaksi = 'y'
-          AND corez_donatur.id_jenis = 3
-          AND corez_transaksi.tgl_transaksi >= ${dateFilterStart}
-          AND corez_transaksi.tgl_transaksi <= ${dateFilterEnd}
-      `
-      capaian = Number(capaianResult[0]?.total) || 0
+      if (isCurrentYear) {
+        // Use corez_transaksi_thisyear for current year
+        let monthFilter = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthFilter = Prisma.sql`AND MONTH(corez_transaksi_thisyear.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+          SELECT COALESCE(SUM(corez_transaksi_thisyear.transaksi), 0) as total
+          FROM corez_transaksi_thisyear
+          INNER JOIN corez_donatur ON corez_transaksi_thisyear.id_donatur = corez_donatur.id_donatur
+          WHERE corez_transaksi_thisyear.id_crm = ${idEmployee}
+            AND corez_transaksi_thisyear.approved_transaksi = 'y'
+            AND corez_donatur.id_jenis = 3
+            ${monthFilter}
+        `
+        capaian = Number(capaianResult[0]?.total) || 0
+      } else {
+        // Use corez_transaksi
+        let yearFilter = Prisma.empty
+        let monthFilter = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          yearFilter = Prisma.sql`AND YEAR(corez_transaksi.tgl_transaksi) = ${filterYear}`
+        }
+
+        if (bulan && bulan !== 'all') {
+          monthFilter = Prisma.sql`AND MONTH(corez_transaksi.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+          SELECT COALESCE(SUM(corez_transaksi.transaksi), 0) as total
+          FROM corez_transaksi
+          INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
+          WHERE corez_transaksi.id_crm = ${idEmployee}
+            AND corez_transaksi.approved_transaksi = 'y'
+            AND corez_donatur.id_jenis = 3
+            ${yearFilter}
+            ${monthFilter}
+        `
+        capaian = Number(capaianResult[0]?.total) || 0
+      }
     } else if (verified === 'cash-unverified') {
-      // Use corez_transaksi_scrap with join to corez_donatur
-      const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
-        SELECT COALESCE(SUM(corez_transaksi_scrap.transaksi), 0) as total
-        FROM corez_transaksi_scrap
-        INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
-        WHERE corez_transaksi_scrap.id_crm = ${idEmployee}
-          AND corez_donatur.id_jenis = 3
-          AND corez_transaksi_scrap.tgl_transaksi >= ${dateFilterStart}
-          AND corez_transaksi_scrap.tgl_transaksi <= ${dateFilterEnd}
-      `
-      capaian = Number(capaianResult[0]?.total) || 0
+      if (isCurrentYear) {
+        // Use corez_transaksi_scrap_thisyear for current year
+        let monthFilter = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthFilter = Prisma.sql`AND MONTH(corez_transaksi_scrap_thisyear.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+          SELECT COALESCE(SUM(corez_transaksi_scrap_thisyear.transaksi), 0) as total
+          FROM corez_transaksi_scrap_thisyear
+          INNER JOIN corez_donatur ON corez_transaksi_scrap_thisyear.id_donatur = corez_donatur.id_donatur
+          WHERE corez_transaksi_scrap_thisyear.id_crm = ${idEmployee}
+            AND corez_donatur.id_jenis = 3
+            ${monthFilter}
+        `
+        capaian = Number(capaianResult[0]?.total) || 0
+      } else {
+        // Use corez_transaksi_scrap
+        let yearFilter = Prisma.empty
+        let monthFilter = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          yearFilter = Prisma.sql`AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}`
+        }
+
+        if (bulan && bulan !== 'all') {
+          monthFilter = Prisma.sql`AND MONTH(corez_transaksi_scrap.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+          SELECT COALESCE(SUM(corez_transaksi_scrap.transaksi), 0) as total
+          FROM corez_transaksi_scrap
+          INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
+          WHERE corez_transaksi_scrap.id_crm = ${idEmployee}
+            AND corez_donatur.id_jenis = 3
+            ${yearFilter}
+            ${monthFilter}
+        `
+        capaian = Number(capaianResult[0]?.total) || 0
+      }
       console.log('Corporate API - Cash Unverified capaian:', capaian)
     } else if (verified === 'bank-unverified') {
-      // Use corez_transaksi_claim with join to corez_donatur
-      const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
-        SELECT COALESCE(SUM(corez_transaksi_claim.transaksi), 0) as total
-        FROM corez_transaksi_claim
-        INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
-        WHERE corez_transaksi_claim.id_crm = ${idEmployee}
-          AND corez_donatur.id_jenis = 3
-          AND corez_transaksi_claim.tgl_transaksi >= ${dateFilterStart}
-          AND corez_transaksi_claim.tgl_transaksi <= ${dateFilterEnd}
-      `
-      capaian = Number(capaianResult[0]?.total) || 0
+      if (isCurrentYear) {
+        // Use corez_transaksi_claim_thisyear for current year
+        let monthFilter = Prisma.empty
+        if (bulan && bulan !== 'all') {
+          monthFilter = Prisma.sql`AND MONTH(corez_transaksi_claim_thisyear.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+          SELECT COALESCE(SUM(corez_transaksi_claim_thisyear.transaksi), 0) as total
+          FROM corez_transaksi_claim_thisyear
+          INNER JOIN corez_donatur ON corez_transaksi_claim_thisyear.id_donatur = corez_donatur.id_donatur
+          WHERE corez_transaksi_claim_thisyear.id_crm = ${idEmployee}
+            AND corez_donatur.id_jenis = 3
+            ${monthFilter}
+        `
+        capaian = Number(capaianResult[0]?.total) || 0
+      } else {
+        // Use corez_transaksi_claim
+        let yearFilter = Prisma.empty
+        let monthFilter = Prisma.empty
+
+        if (tahun && tahun !== 'all') {
+          yearFilter = Prisma.sql`AND YEAR(corez_transaksi_claim.tgl_transaksi) = ${filterYear}`
+        }
+
+        if (bulan && bulan !== 'all') {
+          monthFilter = Prisma.sql`AND MONTH(corez_transaksi_claim.tgl_transaksi) = ${parseInt(
+            bulan
+          )}`
+        }
+
+        const capaianResult = await prisma.$queryRaw<Array<{ total: number }>>`
+          SELECT COALESCE(SUM(corez_transaksi_claim.transaksi), 0) as total
+          FROM corez_transaksi_claim
+          INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
+          WHERE corez_transaksi_claim.id_crm = ${idEmployee}
+            AND corez_donatur.id_jenis = 3
+            ${yearFilter}
+            ${monthFilter}
+        `
+        capaian = Number(capaianResult[0]?.total) || 0
+      }
       console.log('Corporate API - Bank Unverified capaian:', capaian)
     }
 
@@ -100,18 +191,47 @@ export async function GET(request: Request) {
     })
 
     // 3. Sudah Jemput: count distinct donatur from transaksi yang sudah ada transaksi di periode ini
-    // For Corporate, we consider donatur as "sudah dijemput" if they have transactions
-    const sudahDijemputResult = await prisma.$queryRaw<
-      Array<{ count: number }>
-    >`
-      SELECT COUNT(DISTINCT corez_donatur.id_donatur) as count
-      FROM corez_donatur
-      INNER JOIN corez_transaksi_scrap ON corez_donatur.id_donatur = corez_transaksi_scrap.id_donatur
-      WHERE corez_donatur.id_crm = ${idEmployee}
-        AND corez_donatur.id_jenis = 3
-        AND corez_transaksi_scrap.tgl_transaksi >= ${dateFilterStart}
-        AND corez_transaksi_scrap.tgl_transaksi <= ${dateFilterEnd}
-    `
+    let sudahDijemputResult
+    if (isCurrentYear) {
+      let monthFilterJemput = Prisma.empty
+      if (bulan && bulan !== 'all') {
+        monthFilterJemput = Prisma.sql`AND MONTH(corez_transaksi_scrap_thisyear.tgl_transaksi) = ${parseInt(
+          bulan
+        )}`
+      }
+
+      sudahDijemputResult = await prisma.$queryRaw<Array<{ count: number }>>`
+        SELECT COUNT(DISTINCT corez_donatur.id_donatur) as count
+        FROM corez_donatur
+        INNER JOIN corez_transaksi_scrap_thisyear ON corez_donatur.id_donatur = corez_transaksi_scrap_thisyear.id_donatur
+        WHERE corez_donatur.id_crm = ${idEmployee}
+          AND corez_donatur.id_jenis = 3
+          ${monthFilterJemput}
+      `
+    } else {
+      let yearFilterJemput = Prisma.empty
+      let monthFilterJemput = Prisma.empty
+
+      if (tahun && tahun !== 'all') {
+        yearFilterJemput = Prisma.sql`AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}`
+      }
+
+      if (bulan && bulan !== 'all') {
+        monthFilterJemput = Prisma.sql`AND MONTH(corez_transaksi_scrap.tgl_transaksi) = ${parseInt(
+          bulan
+        )}`
+      }
+
+      sudahDijemputResult = await prisma.$queryRaw<Array<{ count: number }>>`
+        SELECT COUNT(DISTINCT corez_donatur.id_donatur) as count
+        FROM corez_donatur
+        INNER JOIN corez_transaksi_scrap ON corez_donatur.id_donatur = corez_transaksi_scrap.id_donatur
+        WHERE corez_donatur.id_crm = ${idEmployee}
+          AND corez_donatur.id_jenis = 3
+          ${yearFilterJemput}
+          ${monthFilterJemput}
+      `
+    }
     const sudahDijemputCount = Number(sudahDijemputResult[0]?.count) || 0
 
     // 4. Belum Jemput: Kotak Aktif - Sudah Jemput
