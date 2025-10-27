@@ -64,7 +64,7 @@ export async function GET(request: Request) {
           LEFT JOIN (
             corez_transaksi_thisyear
             INNER JOIN corez_donatur ON corez_transaksi_thisyear.id_donatur = corez_donatur.id_donatur
-              AND corez_donatur.id_jenis IN (1, 5)
+              AND corez_donatur.id_jenis IN (1, 2, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_thisyear.id_crm
             AND corez_transaksi_thisyear.approved_transaksi = 'y'
             ${monthCondition}
@@ -89,7 +89,7 @@ export async function GET(request: Request) {
             LEFT JOIN (
               corez_transaksi_thisyear
               INNER JOIN corez_donatur ON corez_transaksi_thisyear.id_donatur = corez_donatur.id_donatur
-                AND corez_donatur.id_jenis IN (1, 5)
+                AND corez_donatur.id_jenis IN (1, 2, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi_thisyear.id_crm
               AND corez_transaksi_thisyear.approved_transaksi = 'y'
               ${monthCondition}
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
           LEFT JOIN (
             corez_transaksi
             INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
-              AND corez_donatur.id_jenis IN (1, 5)
+              AND corez_donatur.id_jenis IN (1, 2, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi.id_crm
             AND corez_transaksi.approved_transaksi = 'y'
             ${yearCondition}
@@ -147,7 +147,7 @@ export async function GET(request: Request) {
             LEFT JOIN (
               corez_transaksi
               INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
-                AND corez_donatur.id_jenis IN (1, 5)
+                AND corez_donatur.id_jenis IN (1, 2, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi.id_crm
               AND corez_transaksi.approved_transaksi = 'y'
               ${yearCondition}
@@ -175,7 +175,7 @@ export async function GET(request: Request) {
           LEFT JOIN (
             corez_transaksi_scrap_thisyear
             INNER JOIN corez_donatur ON corez_transaksi_scrap_thisyear.id_donatur = corez_donatur.id_donatur
-              AND corez_donatur.id_jenis IN (1, 5)
+              AND corez_donatur.id_jenis IN (1, 2, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap_thisyear.id_crm
             ${monthCondition}
         WHERE hcm_karyawan.aktif = 'y'
@@ -199,7 +199,7 @@ export async function GET(request: Request) {
             LEFT JOIN (
               corez_transaksi_scrap_thisyear
               INNER JOIN corez_donatur ON corez_transaksi_scrap_thisyear.id_donatur = corez_donatur.id_donatur
-                AND corez_donatur.id_jenis IN (1, 5)
+                AND corez_donatur.id_jenis IN (1, 2, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap_thisyear.id_crm
               ${monthCondition}
           WHERE hcm_karyawan.aktif = 'y'
@@ -230,7 +230,7 @@ export async function GET(request: Request) {
           LEFT JOIN (
             corez_transaksi_scrap
             INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
-              AND corez_donatur.id_jenis IN (1, 5)
+              AND corez_donatur.id_jenis IN (1, 2, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap.id_crm
             ${yearCondition}
             ${monthCondition}
@@ -255,7 +255,7 @@ export async function GET(request: Request) {
             LEFT JOIN (
               corez_transaksi_scrap
               INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
-                AND corez_donatur.id_jenis IN (1, 5)
+                AND corez_donatur.id_jenis IN (1, 2, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi_scrap.id_crm
               ${yearCondition}
               ${monthCondition}
@@ -282,7 +282,7 @@ export async function GET(request: Request) {
           LEFT JOIN (
             corez_transaksi_claim_thisyear
             INNER JOIN corez_donatur ON corez_transaksi_claim_thisyear.id_donatur = corez_donatur.id_donatur
-              AND corez_donatur.id_jenis IN (1, 5)
+              AND corez_donatur.id_jenis IN (1, 2, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim_thisyear.id_crm
             ${monthCondition}
         WHERE hcm_karyawan.aktif = 'y'
@@ -306,7 +306,7 @@ export async function GET(request: Request) {
             LEFT JOIN (
               corez_transaksi_claim_thisyear
               INNER JOIN corez_donatur ON corez_transaksi_claim_thisyear.id_donatur = corez_donatur.id_donatur
-                AND corez_donatur.id_jenis IN (1, 5)
+                AND corez_donatur.id_jenis IN (1, 2, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim_thisyear.id_crm
               ${monthCondition}
             WHERE hcm_karyawan.aktif = 'y'
@@ -337,7 +337,7 @@ export async function GET(request: Request) {
           LEFT JOIN (
             corez_transaksi_claim
             INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
-              AND corez_donatur.id_jenis IN (1, 5)
+              AND corez_donatur.id_jenis IN (1, 2, 5)
           ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim.id_crm
             ${yearCondition}
             ${monthCondition}
@@ -362,7 +362,7 @@ export async function GET(request: Request) {
             LEFT JOIN (
               corez_transaksi_claim
               INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
-                AND corez_donatur.id_jenis IN (1, 5)
+                AND corez_donatur.id_jenis IN (1, 2, 5)
             ) ON hcm_karyawan.id_karyawan = corez_transaksi_claim.id_crm
               ${yearCondition}
               ${monthCondition}

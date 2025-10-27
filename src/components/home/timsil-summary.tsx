@@ -25,13 +25,14 @@ export function TimsilSummary() {
 
   // Initialize with default values to avoid hydration mismatch
   // Summary dropdowns
-  const [selectedYear, setSelectedYear] = useState<string>('2025')
+  const currentYear = new Date().getFullYear().toString()
+  const [selectedYear, setSelectedYear] = useState<string>(currentYear)
   const [selectedMonth, setSelectedMonth] = useState<string>('1')
   const [selectedVerified, setSelectedVerified] =
     useState<string>('cash-unverified')
 
   // Leaderboard dropdowns (separate from summary)
-  const [leaderboardYear, setLeaderboardYear] = useState<string>('2025')
+  const [leaderboardYear, setLeaderboardYear] = useState<string>(currentYear)
   const [leaderboardMonth, setLeaderboardMonth] = useState<string>('1')
   const [leaderboardVerified, setLeaderboardVerified] =
     useState<string>('cash-unverified')
@@ -145,10 +146,10 @@ export function TimsilSummary() {
   }
 
   // Generate year options (current year and 2 years back)
-  const currentYear = parseInt(selectedYear) || new Date().getFullYear()
+  const selectedYearNum = parseInt(selectedYear) || new Date().getFullYear()
   const yearOptions = []
   for (let i = 0; i <= 2; i++) {
-    yearOptions.push(currentYear - i)
+    yearOptions.push(selectedYearNum - i)
   }
 
   // Generate month options
@@ -214,7 +215,7 @@ export function TimsilSummary() {
               title="Pilih Bulan"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {monthOptions.map((month) => (
                 <option key={month.value} value={month.value}>
@@ -228,7 +229,7 @@ export function TimsilSummary() {
               title="Pilih Status Verified"
               value={selectedVerified}
               onChange={(e) => setSelectedVerified(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="verified">Verified</option>
               <option value="cash-unverified">Cash Unverified</option>
@@ -304,7 +305,7 @@ export function TimsilSummary() {
               title="Pilih Bulan untuk Leaderboard"
               value={leaderboardMonth}
               onChange={(e) => setLeaderboardMonth(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {monthOptions.map((month) => (
                 <option key={month.value} value={month.value}>
@@ -318,7 +319,7 @@ export function TimsilSummary() {
               title="Pilih Status Verified untuk Leaderboard"
               value={leaderboardVerified}
               onChange={(e) => setLeaderboardVerified(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="verified">Verified</option>
               <option value="cash-unverified">Cash Unverified</option>

@@ -87,7 +87,7 @@ export async function GET(request: Request) {
           INNER JOIN corez_donatur ON corez_transaksi_thisyear.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_thisyear.id_crm = ${idEmployee}
             AND corez_transaksi_thisyear.approved_transaksi = 'y'
-            AND corez_donatur.id_jenis IN (1, 5)
+            AND corez_donatur.id_jenis IN (1, 2, 5)
             ${monthFilter}
         `
         capaian = Number(capaianResult[0]?.total) || 0
@@ -117,7 +117,7 @@ export async function GET(request: Request) {
           INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi.id_crm = ${idEmployee}
             AND corez_transaksi.approved_transaksi = 'y'
-            AND corez_donatur.id_jenis IN (1, 5)
+            AND corez_donatur.id_jenis IN (1, 2, 5)
             ${yearFilter}
             ${monthFilter}
         `
@@ -142,7 +142,7 @@ export async function GET(request: Request) {
           FROM corez_transaksi_scrap_thisyear
           INNER JOIN corez_donatur ON corez_transaksi_scrap_thisyear.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_scrap_thisyear.id_crm = ${idEmployee}
-            AND corez_donatur.id_jenis IN (1, 5)
+            AND corez_donatur.id_jenis IN (1, 2, 5)
             ${monthFilter}
         `
         capaian = Number(capaianResult[0]?.total) || 0
@@ -170,7 +170,7 @@ export async function GET(request: Request) {
           FROM corez_transaksi_scrap
           INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_scrap.id_crm = ${idEmployee}
-            AND corez_donatur.id_jenis IN (1, 5)
+            AND corez_donatur.id_jenis IN (1, 2, 5)
             ${yearFilter}
             ${monthFilter}
         `
@@ -195,7 +195,7 @@ export async function GET(request: Request) {
           FROM corez_transaksi_claim_thisyear
           INNER JOIN corez_donatur ON corez_transaksi_claim_thisyear.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_claim_thisyear.id_crm = ${idEmployee}
-            AND corez_donatur.id_jenis IN (1, 5)
+            AND corez_donatur.id_jenis IN (1, 2, 5)
             ${monthFilter}
         `
         capaian = Number(capaianResult[0]?.total) || 0
@@ -223,7 +223,7 @@ export async function GET(request: Request) {
           FROM corez_transaksi_claim
           INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_claim.id_crm = ${idEmployee}
-            AND corez_donatur.id_jenis IN (1, 5)
+            AND corez_donatur.id_jenis IN (1, 2, 5)
             ${yearFilter}
             ${monthFilter}
         `
@@ -245,7 +245,7 @@ export async function GET(request: Request) {
       FROM corez_kunjungan
       INNER JOIN corez_donatur ON CONVERT(corez_kunjungan.id_donatur USING utf8mb4) COLLATE utf8mb4_unicode_ci = corez_donatur.id_donatur
       WHERE corez_donatur.id_crm = ${idEmployee}
-        AND corez_donatur.id_jenis IN (1, 5)
+        AND corez_donatur.id_jenis IN (1, 2, 5)
         AND corez_kunjungan.tgl_kunjungan >= ${dateFilterStart}
         AND corez_kunjungan.tgl_kunjungan <= ${dateFilterEnd}
     `
@@ -276,7 +276,7 @@ export async function GET(request: Request) {
       FROM corez_kunjungan
       INNER JOIN corez_donatur ON CONVERT(corez_kunjungan.id_donatur USING utf8mb4) COLLATE utf8mb4_unicode_ci = corez_donatur.id_donatur
       WHERE corez_donatur.id_crm = ${idEmployee}
-        AND corez_donatur.id_jenis IN (1, 5)
+        AND corez_donatur.id_jenis IN (1, 2, 5)
         AND corez_kunjungan.sudah_dikunjungi = 'y'
         AND corez_kunjungan.tgl_kunjungan >= ${dateFilterStart}
         AND corez_kunjungan.tgl_kunjungan <= ${dateFilterEnd}
@@ -293,7 +293,7 @@ export async function GET(request: Request) {
       FROM corez_kunjungan
       INNER JOIN corez_donatur ON CONVERT(corez_kunjungan.id_donatur USING utf8mb4) COLLATE utf8mb4_unicode_ci = corez_donatur.id_donatur
       WHERE corez_donatur.id_crm = ${idEmployee}
-        AND corez_donatur.id_jenis IN (1, 5)
+        AND corez_donatur.id_jenis IN (1, 2, 5)
         AND corez_kunjungan.sudah_dikunjungi = 'n'
         AND corez_kunjungan.tgl_kunjungan >= ${dateFilterStart}
         AND corez_kunjungan.tgl_kunjungan <= ${dateFilterEnd}

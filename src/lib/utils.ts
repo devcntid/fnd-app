@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -18,12 +18,16 @@ export function formatCurrency(value: number): string {
   return `Rp ${new Intl.NumberFormat('id-ID').format(value)}`
 }
 
+export function formatCurrencyFull(value: number): string {
+  return `Rp ${new Intl.NumberFormat('id-ID').format(value)}`
+}
+
 export function formatDate(date: Date | string): string {
   const d = new Date(date)
   return d.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   })
 }
 
@@ -34,7 +38,7 @@ export function formatDateTime(date: Date | string): string {
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 
@@ -49,4 +53,3 @@ export function getCurrentYear(): number {
 export function generateId(): string {
   return Math.random().toString(36).substr(2, 9)
 }
-

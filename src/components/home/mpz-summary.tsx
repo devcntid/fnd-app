@@ -23,13 +23,14 @@ export function MpzSummary() {
   const [hasMoreLeaderboard, setHasMoreLeaderboard] = useState(true)
 
   // Initialize with default values to avoid hydration mismatch
-  const [selectedYear, setSelectedYear] = useState<string>('2025')
+  const currentYear = new Date().getFullYear().toString()
+  const [selectedYear, setSelectedYear] = useState<string>(currentYear)
   const [selectedMonth, setSelectedMonth] = useState<string>('1')
   const [selectedVerified, setSelectedVerified] =
     useState<string>('cash-unverified')
 
   // Leaderboard dropdowns (separate from summary)
-  const [leaderboardYear, setLeaderboardYear] = useState<string>('2025')
+  const [leaderboardYear, setLeaderboardYear] = useState<string>(currentYear)
   const [leaderboardMonth, setLeaderboardMonth] = useState<string>('1')
   const [leaderboardVerified, setLeaderboardVerified] =
     useState<string>('cash-unverified')
@@ -143,10 +144,10 @@ export function MpzSummary() {
   }
 
   // Generate year options (current year and 2 years back)
-  const currentYear = parseInt(selectedYear) || new Date().getFullYear()
+  const selectedYearNum = parseInt(selectedYear) || new Date().getFullYear()
   const yearOptions = []
   for (let i = 0; i <= 2; i++) {
-    yearOptions.push(currentYear - i)
+    yearOptions.push(selectedYearNum - i)
   }
 
   // Generate month options
@@ -188,9 +189,7 @@ export function MpzSummary() {
     <div className="space-y-4">
       <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
         <div className="flex justify-between items-center flex-wrap gap-2">
-          <h3 className="font-semibold text-lg text-gray-800">
-            Ringkasan MPZ
-          </h3>
+          <h3 className="font-semibold text-lg text-gray-800">Ringkasan MPZ</h3>
           <div className="flex items-center gap-2">
             {/* Tahun dropdown */}
             <select
@@ -212,7 +211,7 @@ export function MpzSummary() {
               title="Pilih Bulan"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {monthOptions.map((month) => (
                 <option key={month.value} value={month.value}>
@@ -226,7 +225,7 @@ export function MpzSummary() {
               title="Pilih Status Verified"
               value={selectedVerified}
               onChange={(e) => setSelectedVerified(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="verified">Verified</option>
               <option value="cash-unverified">Cash Unverified</option>
@@ -244,9 +243,7 @@ export function MpzSummary() {
           <p className="text-3xl font-bold text-purple-600">
             Rp {formatNumber(data?.capaian || 0)}
           </p>
-          <p className="text-sm font-semibold text-gray-600">
-            Capaian MPZ
-          </p>
+          <p className="text-sm font-semibold text-gray-600">Capaian MPZ</p>
         </div>
 
         <div className="grid grid-cols-3 gap-4 text-center border-t border-gray-100 pt-4">
@@ -298,7 +295,7 @@ export function MpzSummary() {
               title="Pilih Bulan untuk Leaderboard"
               value={leaderboardMonth}
               onChange={(e) => setLeaderboardMonth(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {monthOptions.map((month) => (
                 <option key={month.value} value={month.value}>
@@ -312,7 +309,7 @@ export function MpzSummary() {
               title="Pilih Status Verified untuk Leaderboard"
               value={leaderboardVerified}
               onChange={(e) => setLeaderboardVerified(e.target.value)}
-              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[110px]"
+              className="bg-gray-100 border-gray-200 border text-gray-800 text-xs font-semibold p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="verified">Verified</option>
               <option value="cash-unverified">Cash Unverified</option>
