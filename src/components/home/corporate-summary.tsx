@@ -38,7 +38,6 @@ export function CorporateSummary() {
 
   useEffect(() => {
     let isMounted = true
-    let timeoutId: NodeJS.Timeout
 
     const fetchData = async () => {
       try {
@@ -61,7 +60,7 @@ export function CorporateSummary() {
     }
 
     // Debounce the fetch to prevent rapid requests
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       fetchData()
     }, 100)
 

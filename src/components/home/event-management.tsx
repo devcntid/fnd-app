@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import {
   Download,
   CheckSquare,
@@ -1092,10 +1093,13 @@ function EventCard({
       {/* Event Poster */}
       <div className="bg-blue-600 rounded-lg p-8 mb-4 text-center">
         {event.flyer ? (
-          <img
+          <Image
             src={event.flyer}
             alt={`Poster ${event.nama}`}
+            width={400}
+            height={128}
             className="w-full h-32 object-cover rounded-lg"
+            unoptimized
             onError={(e) => {
               const target = e.currentTarget as HTMLImageElement
               target.style.display = 'none'
