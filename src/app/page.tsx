@@ -8,6 +8,8 @@ import { EventManagement } from '@/components/home/event-management'
 import { TimsilSummary } from '@/components/home/timsil-summary'
 import { KalimatSummary } from '@/components/home/kalimat-summary'
 import { CorporateSummary } from '@/components/home/corporate-summary'
+import { GeraiSummary } from '@/components/home/gerai-summary'
+import { MitraSummary } from '@/components/home/mitra-summary'
 import { formatCurrency } from '@/lib/utils'
 import { mockAppData } from '@/lib/mock-data'
 
@@ -45,6 +47,26 @@ export default function HomePage() {
               Aktivitas Corporate
             </h2>
             <CorporateSummary />
+          </div>
+        )
+
+      case 'gerai':
+        return (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-white">
+              Aktivitas Gerai
+            </h2>
+            <GeraiSummary />
+          </div>
+        )
+
+      case 'mitra-unggul':
+        return (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-white">
+              Aktivitas Mitra Unggul
+            </h2>
+            <MitraSummary />
           </div>
         )
 
