@@ -10,6 +10,7 @@ import { KalimatSummary } from '@/components/home/kalimat-summary'
 import { CorporateSummary } from '@/components/home/corporate-summary'
 import { GeraiSummary } from '@/components/home/gerai-summary'
 import { MitraSummary } from '@/components/home/mitra-summary'
+import { MpzSummary } from '@/components/home/mpz-summary'
 import { formatCurrency } from '@/lib/utils'
 import { mockAppData } from '@/lib/mock-data'
 
@@ -53,9 +54,7 @@ export default function HomePage() {
       case 'gerai':
         return (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-white">
-              Aktivitas Gerai
-            </h2>
+            <h2 className="text-2xl font-bold text-white">Aktivitas Gerai</h2>
             <GeraiSummary />
           </div>
         )
@@ -67,6 +66,16 @@ export default function HomePage() {
               Aktivitas Mitra Unggul
             </h2>
             <MitraSummary />
+          </div>
+        )
+
+      case 'mpz':
+        return (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-white">
+              Aktivitas MPZ
+            </h2>
+            <MpzSummary />
           </div>
         )
 
