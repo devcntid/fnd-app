@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react'
 
 interface MpzData {
   capaian: number
-  kotakAktif: number
-  sudahDijemput: number
-  belumDijemput: number
+  totalMpz: number
+  mpzAktif: number
+  mpzTidakAktif: number
 }
 
 interface LeaderboardItem {
@@ -249,21 +249,21 @@ export function MpzSummary() {
         <div className="grid grid-cols-3 gap-4 text-center border-t border-gray-100 pt-4">
           <div>
             <p className="text-xl font-bold text-blue-600">
-              {data?.kotakAktif || 0}
+              {data?.totalMpz || 0}
             </p>
-            <p className="text-xs text-gray-600">Kotak Aktif</p>
+            <p className="text-xs text-gray-600">Total MPZ</p>
           </div>
           <div>
             <p className="text-xl font-bold text-green-600">
-              {data?.sudahDijemput || 0}
+              {data?.mpzAktif || 0}
             </p>
-            <p className="text-xs text-gray-600">Sudah Jemput</p>
+            <p className="text-xs text-gray-600">MPZ Aktif</p>
           </div>
           <div>
             <p className="text-xl font-bold text-red-500">
-              {data?.belumDijemput || 0}
+              {data?.mpzTidakAktif || 0}
             </p>
-            <p className="text-xs text-gray-600">Belum Jemput</p>
+            <p className="text-xs text-gray-600">MPZ Tidak Aktif</p>
           </div>
         </div>
       </div>

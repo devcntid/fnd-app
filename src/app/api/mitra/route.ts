@@ -182,75 +182,41 @@ export async function GET(request: Request) {
       console.log('Mitra API - Bank Unverified capaian:', capaian)
     }
 
-    // 2. Kotak Aktif: total count of donatur with id_jenis = 6 and id_crm = id_employee (all time)
-    const kotakAktifCount = await prisma.corezDonatur.count({
+    // 2. Total Mitra: count total donatur yang id_crm = idEmployee dan id_jenis = 6
+    const totalMitraCount = await prisma.corezDonatur.count({
       where: {
-        idJenis: 3,
+        idJenis: 6,
         idCrm: idEmployee,
       },
     })
 
-    // 3. Sudah Jemput: count distinct donatur from transaksi yang sudah ada transaksi di periode ini
-    let sudahDijemputResult
-    if (isCurrentYear) {
-      let monthFilterJemput = Prisma.empty
-      if (bulan && bulan !== 'all') {
-        monthFilterJemput = Prisma.sql`AND MONTH(corez_transaksi_scrap_thisyear.tgl_transaksi) = ${parseInt(
-          bulan
-        )}`
-      }
+    // 3. Total Mitra Aktif: count distinct id_donatur dari corez_transaksi yang id_jenis = 6
+    const mitraAktifResult = await prisma.$queryRaw<Array<{ count: number }>>`
+      SELECT COUNT(DISTINCT corez_transaksi.id_donatur) as count
+      FROM corez_transaksi
+      INNER JOIN corez_donatur ON corez_transaksi.id_donatur = corez_donatur.id_donatur
+      WHERE corez_transaksi.id_crm = ${idEmployee}
+        AND corez_donatur.id_jenis = 6
+    `
+    const mitraAktifCount = Number(mitraAktifResult[0]?.count) || 0
 
-      sudahDijemputResult = await prisma.$queryRaw<Array<{ count: number }>>`
-        SELECT COUNT(DISTINCT corez_donatur.id_donatur) as count
-        FROM corez_donatur
-        INNER JOIN corez_transaksi_scrap_thisyear ON corez_donatur.id_donatur = corez_transaksi_scrap_thisyear.id_donatur
-        WHERE corez_donatur.id_crm = ${idEmployee}
-          AND corez_donatur.id_jenis = 6
-          ${monthFilterJemput}
-      `
-    } else {
-      let yearFilterJemput = Prisma.empty
-      let monthFilterJemput = Prisma.empty
-
-      if (tahun && tahun !== 'all') {
-        yearFilterJemput = Prisma.sql`AND YEAR(corez_transaksi_scrap.tgl_transaksi) = ${filterYear}`
-      }
-
-      if (bulan && bulan !== 'all') {
-        monthFilterJemput = Prisma.sql`AND MONTH(corez_transaksi_scrap.tgl_transaksi) = ${parseInt(
-          bulan
-        )}`
-      }
-
-      sudahDijemputResult = await prisma.$queryRaw<Array<{ count: number }>>`
-        SELECT COUNT(DISTINCT corez_donatur.id_donatur) as count
-        FROM corez_donatur
-        INNER JOIN corez_transaksi_scrap ON corez_donatur.id_donatur = corez_transaksi_scrap.id_donatur
-        WHERE corez_donatur.id_crm = ${idEmployee}
-          AND corez_donatur.id_jenis = 6
-          ${yearFilterJemput}
-          ${monthFilterJemput}
-      `
-    }
-    const sudahDijemputCount = Number(sudahDijemputResult[0]?.count) || 0
-
-    // 4. Belum Jemput: Kotak Aktif - Sudah Jemput
-    const belumDijemputCount = kotakAktifCount - sudahDijemputCount
+    // 4. Total Mitra Tidak Aktif: Total Mitra - Total Mitra Aktif (yang belum bertransaksi)
+    const mitraTidakAktifCount = totalMitraCount - mitraAktifCount
 
     console.log('Mitra API - Final data:', {
       capaian,
-      kotakAktif: kotakAktifCount,
-      sudahDijemput: sudahDijemputCount,
-      belumDijemput: belumDijemputCount,
+      totalMitra: totalMitraCount,
+      mitraAktif: mitraAktifCount,
+      mitraTidakAktif: mitraTidakAktifCount,
     })
 
     return NextResponse.json({
       success: true,
       data: {
         capaian,
-        kotakAktif: kotakAktifCount,
-        sudahDijemput: sudahDijemputCount,
-        belumDijemput: belumDijemputCount,
+        totalMitra: totalMitraCount,
+        mitraAktif: mitraAktifCount,
+        mitraTidakAktif: mitraTidakAktifCount,
       },
     })
   } catch (error) {
