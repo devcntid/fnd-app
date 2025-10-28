@@ -34,7 +34,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="max-w-sm mx-auto min-h-screen flex items-center justify-center"
+      className="w-full max-w-md mx-auto min-h-screen flex items-center justify-center"
       style={{ backgroundColor: '#0f2552' }}
     >
       <main className="p-6 w-full relative">

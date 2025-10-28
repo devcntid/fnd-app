@@ -23,7 +23,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
       <div className="fixed inset-0 bg-[#1e4ab3] -z-10" />
 
       <div
-        className="max-w-sm mx-auto min-h-screen flex flex-col overflow-x-hidden relative"
+        className="w-full max-w-md mx-auto min-h-screen flex flex-col overflow-x-hidden relative"
         style={{ backgroundColor: '#1e4ab3' }}
       >
         <div

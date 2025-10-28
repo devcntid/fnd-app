@@ -22,7 +22,7 @@ export function FloatingTabs({
 }: FloatingTabsProps) {
   return (
     <div className="fixed bottom-20 left-0 right-0 z-10 p-4 pointer-events-none">
-      <div className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm p-1.5 rounded-full shadow-lg max-w-sm mx-auto pointer-events-auto">
+      <div className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm p-1.5 rounded-full shadow-lg w-full max-w-md mx-auto pointer-events-auto">
         {categories.map((category) => (
           <Button
             key={category.id}
