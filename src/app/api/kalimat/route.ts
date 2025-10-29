@@ -116,6 +116,7 @@ export async function GET(request: Request) {
           FROM corez_transaksi_scrap_thisyear
           INNER JOIN corez_donatur ON corez_transaksi_scrap_thisyear.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_scrap_thisyear.id_crm = ${idEmployee}
+            AND corez_transaksi_scrap_thisyear.approved_transaksi != 'y'
             AND corez_donatur.id_jenis = 4
             ${monthFilter}
         `
@@ -144,6 +145,7 @@ export async function GET(request: Request) {
           FROM corez_transaksi_scrap
           INNER JOIN corez_donatur ON corez_transaksi_scrap.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_scrap.id_crm = ${idEmployee}
+            AND corez_transaksi_scrap.approved_transaksi != 'y'
             AND corez_donatur.id_jenis = 4
             ${yearFilter}
             ${monthFilter}
@@ -169,6 +171,7 @@ export async function GET(request: Request) {
           FROM corez_transaksi_claim_thisyear
           INNER JOIN corez_donatur ON corez_transaksi_claim_thisyear.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_claim_thisyear.id_crm = ${idEmployee}
+            AND corez_transaksi_claim_thisyear.approved_transaksi != 'y'
             AND corez_donatur.id_jenis = 4
             ${monthFilter}
         `
@@ -197,6 +200,7 @@ export async function GET(request: Request) {
           FROM corez_transaksi_claim
           INNER JOIN corez_donatur ON corez_transaksi_claim.id_donatur = corez_donatur.id_donatur
           WHERE corez_transaksi_claim.id_crm = ${idEmployee}
+            AND corez_transaksi_claim.approved_transaksi != 'y'
             AND corez_donatur.id_jenis = 4
             ${yearFilter}
             ${monthFilter}
