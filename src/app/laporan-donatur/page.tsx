@@ -58,7 +58,6 @@ export default function LaporanDonaturPage() {
   const [donorPage, setDonorPage] = useState(1)
   const [donorHasMore, setDonorHasMore] = useState(true)
   const [donorTotal, setDonorTotal] = useState(0)
-  const donorObserverRef = useRef<HTMLDivElement | null>(null)
   const donorLoadingRef = useRef(false)
   const donorAbortRef = useRef<AbortController | null>(null)
 
@@ -66,7 +65,6 @@ export default function LaporanDonaturPage() {
   const [posters, setPosters] = useState<PosterItem[]>([])
   const [posterPage, setPosterPage] = useState(1)
   const [posterHasMore, setPosterHasMore] = useState(true)
-  const posterObserverRef = useRef<HTMLDivElement | null>(null)
   const posterLoadingRef = useRef(false)
 
   const [showDetail, setShowDetail] = useState(false)
@@ -120,11 +118,7 @@ export default function LaporanDonaturPage() {
     }
   }
 
-  const handleNotificationClick = () => {
-    console.log('Notification clicked')
-  }
-
-  const handleSearch = (query: string) => {}
+  // no-op
 
   const handleBackClick = () => {
     window.history.back()

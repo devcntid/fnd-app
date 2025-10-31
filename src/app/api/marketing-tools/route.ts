@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
     const tipe = (searchParams.get('tipe') || '').trim()
     const offset = (page - 1) * limit
 
-    const where: any = {}
+    const where: Prisma.CorezMarketingToolsWhereInput = {}
     if (tipe) {
       where.tipe = tipe
     }
