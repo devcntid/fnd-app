@@ -5,14 +5,21 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '5')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const tipe = (searchParams.get('tipe') || '').trim()
     const offset = (page - 1) * limit
 
+    const where: any = {}
+    if (tipe) {
+      where.tipe = tipe
+    }
+
     // Get total count
-    const totalCount = await prisma.corezMarketingTools.count()
+    const totalCount = await prisma.corezMarketingTools.count({ where })
 
     // Get paginated data
     const marketingTools = await prisma.corezMarketingTools.findMany({
+      where,
       orderBy: {
         createdAt: 'desc',
       },

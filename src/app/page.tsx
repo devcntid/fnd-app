@@ -308,7 +308,9 @@ export default function HomePage() {
       <GridMenu activeTab={activeTab} onTabChange={setActiveTab} />
       <ActionButtons
         onToolsClick={handleToolsClick}
-        onLaporanDonaturClick={() => {}}
+        onLaporanDonaturClick={() => {
+          router.push('/laporan-donatur')
+        }}
       />
       <div className="mt-5">{renderTabContent()}</div>
     </main>
